@@ -1,0 +1,1118 @@
+@page "/consultation"
+@rendermode InteractiveWebAssembly
+@inject HttpClient Http
+@using System.Net.Http.Json
+
+<PageTitle>Schedule a Consultation</PageTitle>
+
+<div class="consultation-container">
+    @if (!isBooked)
+    {
+        <section class="consultation-hero">
+            <div class="hero-content">
+                <h1>Schedule Your Free Consultation</h1>
+                <p class="lead">Let's discuss how we can help transform your business</p>
+            </div>
+        </section>
+
+        <section class="consultation-wizard">
+            <div class="content-wrapper">
+                <div class="progress-bar">
+                    <div class="progress-step @(currentStep >= 1 ? "active" : "") @(currentStep > 1 ? "completed" : "")">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">Select Date & Time</div>
+                    </div>
+                    <div class="progress-line @(currentStep > 1 ? "completed" : "")"></div>
+                    <div class="progress-step @(currentStep >= 2 ? "active" : "") @(currentStep > 2 ? "completed" : "")">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">Your Information</div>
+                    </div>
+                    <div class="progress-line @(currentStep > 2 ? "completed" : "")"></div>
+                    <div class="progress-step @(currentStep >= 3 ? "active" : "")">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">Confirm</div>
+                    </div>
+                </div>
+
+                @if (currentStep == 1)
+                {
+                    <div class="wizard-card">
+                        <h2>Select Your Preferred Date & Time</h2>
+                        <p class="step-description">Choose an available time slot that works best for you</p>
+
+                        <div class="calendar-section">
+                            <div class="calendar-header">
+                                <button class="calendar-nav" @onclick="PreviousMonth">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="15 18 9 12 15 6"></polyline>
+                                    </svg>
+                                </button>
+                                <h3>@currentMonth.ToString("MMMM yyyy")</h3>
+                                <button class="calendar-nav" @onclick="NextMonth">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="calendar-grid">
+                                <div class="calendar-day-label">Sun</div>
+                                <div class="calendar-day-label">Mon</div>
+                                <div class="calendar-day-label">Tue</div>
+                                <div class="calendar-day-label">Wed</div>
+                                <div class="calendar-day-label">Thu</div>
+                                <div class="calendar-day-label">Fri</div>
+                                <div class="calendar-day-label">Sat</div>
+
+                                @foreach (var day in GetCalendarDays())
+                                {
+                                    <div class="calendar-day @(day.IsCurrentMonth ? "" : "other-month") 
+                                                @(day.IsPast ? "past" : "") 
+                                                @(day.IsWeekend ? "weekend" : "")
+                                                @(day.Date == selectedDate ? "selected" : "")"
+                                         @onclick="() => SelectDate(day)">
+                                        <span class="day-number">@day.Date.Day</span>
+                                    </div>
+                                }
+                            </div>
+
+                            @if (selectedDate.HasValue)
+                            {
+                                <div class="time-slots-section">
+                                    <h3>Available Times for @selectedDate.Value.ToString("dddd, MMMM dd")</h3>
+                                    <div class="time-slots-grid">
+                                        @foreach (var time in availableTimes)
+                                        {
+                                            <button class="time-slot @(selectedTime == time ? "selected" : "")"
+                                                    @onclick="() => SelectTime(time)">
+                                                @time
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="error-message">@errorMessage</div>
+                        }
+
+                        <div class="wizard-actions">
+                            <button class="btn-next" @onclick="GoToStep2">
+                                Next: Your Information
+                            </button>
+                        </div>
+                    </div>
+                }
+                else if (currentStep == 2)
+                {
+                    <div class="wizard-card">
+                        <h2>Your Information</h2>
+                        <p class="step-description">Please provide your contact details</p>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="fullName">Full Name *</label>
+                                <input type="text" id="fullName" class="form-control" @bind="fullName" placeholder="John Doe" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Email *</label>
+                                <input type="email" id="email" class="form-control" @bind="email" placeholder="john@example.com" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" id="phone" class="form-control" @bind="phone" placeholder="(555) 123-4567" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="company">Company Name</label>
+                                <input type="text" id="company" class="form-control" @bind="company" placeholder="Your Company" />
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label for="message">What would you like to discuss?</label>
+                                <textarea id="message" class="form-control" rows="4" @bind="message" placeholder="Tell us about your project or challenges..."></textarea>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="error-message">@errorMessage</div>
+                        }
+
+                        <div class="wizard-actions">
+                            <button class="btn-back" @onclick="GoToStep1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                </svg>
+                                Back
+                            </button>
+                            <button class="btn-next" @onclick="GoToStep3">
+                                Next: Confirm
+                            </button>
+                        </div>
+                    </div>
+                }
+                else if (currentStep == 3)
+                {
+                    <div class="wizard-card">
+                        <h2>Confirm Your Consultation</h2>
+                        <p class="step-description">Please review your details before confirming</p>
+
+                        <div class="summary-section">
+                            <div class="summary-group">
+                                <h3>Appointment Details</h3>
+                                <div class="summary-item">
+                                    <strong>Date:</strong>
+                                    <span>@selectedDate?.ToString("dddd, MMMM dd, yyyy")</span>
+                                    <button class="btn-edit" @onclick="GoToStep1">Edit</button>
+                                </div>
+                                <div class="summary-item">
+                                    <strong>Time:</strong>
+                                    <span>@selectedTime</span>
+                                    <button class="btn-edit" @onclick="GoToStep1">Edit</button>
+                                </div>
+                                <div class="summary-item">
+                                    <strong>Duration:</strong>
+                                    <span>30 minutes</span>
+                                </div>
+                            </div>
+
+                            <div class="summary-group">
+                                <h3>Your Information</h3>
+                                <div class="summary-item">
+                                    <strong>Name:</strong>
+                                    <span>@fullName</span>
+                                    <button class="btn-edit" @onclick="GoToStep2">Edit</button>
+                                </div>
+                                <div class="summary-item">
+                                    <strong>Email:</strong>
+                                    <span>@email</span>
+                                    <button class="btn-edit" @onclick="GoToStep2">Edit</button>
+                                </div>
+                                <div class="summary-item">
+                                    <strong>Phone:</strong>
+                                    <span>@phone</span>
+                                    <button class="btn-edit" @onclick="GoToStep2">Edit</button>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(company))
+                                {
+                                    <div class="summary-item">
+                                        <strong>Company:</strong>
+                                        <span>@company</span>
+                                        <button class="btn-edit" @onclick="GoToStep2">Edit</button>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(message))
+                                {
+                                    <div class="summary-item">
+                                        <strong>Message:</strong>
+                                        <span>@message</span>
+                                        <button class="btn-edit" @onclick="GoToStep2">Edit</button>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="error-message">@errorMessage</div>
+                        }
+
+                        <div class="wizard-actions">
+                            <button class="btn-back" @onclick="GoToStep2" disabled="@isSubmitting">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                </svg>
+                                Back
+                            </button>
+                            <button class="btn-confirm" @onclick="ConfirmBooking" disabled="@isSubmitting">
+                                @if (isSubmitting)
+                                {
+                                    <span>Confirming...</span>
+                                }
+                                else
+                                {
+                                    <span>Confirm Consultation</span>
+                                }
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+    else
+    {
+        <section class="confirmation-section">
+            <div class="content-wrapper">
+                <div class="confirmation-card">
+                    <div class="success-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>
+                    <h1>Consultation Scheduled!</h1>
+                    <p class="confirmation-message">Thank you for scheduling a consultation with Catalyst Software Solutions.</p>
+
+                    <div class="booking-details">
+                        <h2>Your Appointment Details</h2>
+                        <div class="detail-item">
+                            <strong>Date:</strong>
+                            <span>@selectedDate?.ToString("dddd, MMMM dd, yyyy")</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Time:</strong>
+                            <span>@selectedTime</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Duration:</strong>
+                            <span>30 minutes</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Name:</strong>
+                            <span>@fullName</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Email:</strong>
+                            <span>@email</span>
+                        </div>
+                    </div>
+
+                    <div class="next-steps">
+                        <h3>What's Next?</h3>
+                        <ul>
+                            <li>You'll receive a confirmation email shortly</li>
+                            <li>A calendar invite will be sent to your email</li>
+                            <li>We'll send you a reminder 24 hours before your consultation</li>
+                            <li>If you need to reschedule, please contact us at info@catalystsoftware.com</li>
+                        </ul>
+                    </div>
+
+                    <div class="confirmation-actions">
+                        <a href="/" class="btn-primary">Return to Home</a>
+                        <button class="btn-secondary" @onclick="BookAnother">Schedule Another</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+</div>
+
+<style>
+    .consultation-container {
+        width: 100%;
+    }
+
+    .consultation-hero {
+        background: linear-gradient(135deg, #FF6B35 0%, #0066CC 100%);
+        color: white;
+        padding: 80px 20px;
+        text-align: center;
+    }
+
+    .hero-content h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    .lead {
+        font-size: 1.5rem;
+        opacity: 0.95;
+    }
+
+    .content-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .consultation-wizard {
+        padding: 60px 20px 80px;
+        background: #f8f9fa;
+    }
+
+    .progress-bar {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 60px;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .progress-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .step-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #718096;
+        transition: all 0.3s ease;
+    }
+
+    .progress-step.active .step-circle {
+        background: linear-gradient(135deg, #FF6B35 0%, #0066CC 100%);
+        color: white;
+        border-color: #FF6B35;
+    }
+
+    .progress-step.completed .step-circle {
+        background: #10b981;
+        color: white;
+        border-color: #10b981;
+    }
+
+    .step-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #718096;
+        text-align: center;
+    }
+
+    .progress-step.active .step-label {
+        color: #2d3748;
+    }
+
+    .progress-line {
+        width: 100px;
+        height: 3px;
+        background: #e2e8f0;
+        margin: 0 16px;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+    }
+
+    .progress-line.completed {
+        background: #10b981;
+    }
+
+    .wizard-card {
+        background: white;
+        padding: 48px;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .wizard-card h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 8px;
+    }
+
+    .step-description {
+        color: #718096;
+        margin-bottom: 40px;
+    }
+
+    .calendar-section {
+        margin-bottom: 32px;
+    }
+
+    .calendar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+    }
+
+    .calendar-header h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin: 0;
+    }
+
+    .calendar-nav {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: #2d3748;
+    }
+
+    .calendar-nav:hover {
+        border-color: #FF6B35;
+        color: #FF6B35;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 8px;
+        margin-bottom: 32px;
+    }
+
+    .calendar-day-label {
+        text-align: center;
+        font-weight: 600;
+        color: #718096;
+        padding: 12px 0;
+        font-size: 0.875rem;
+    }
+
+    .calendar-day {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: white;
+        border: 2px solid #e2e8f0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #2d3748;
+        position: relative;
+    }
+
+    .calendar-day:hover:not(.past):not(.other-month) {
+        border-color: #FF6B35;
+        transform: scale(1.05);
+    }
+
+    .calendar-day.selected {
+        background: linear-gradient(135deg, #FF6B35 0%, #0066CC 100%);
+        color: white;
+        border-color: transparent;
+    }
+
+    .calendar-day.other-month {
+        color: #cbd5e0;
+        cursor: default;
+    }
+
+    .calendar-day.past {
+        color: #cbd5e0;
+        cursor: not-allowed;
+        background: #f8f9fa;
+    }
+
+    .calendar-day.weekend:not(.past):not(.other-month):not(.selected) {
+        background: #fffbf5;
+    }
+
+    .day-number {
+        position: relative;
+        z-index: 1;
+    }
+
+    .time-slots-section {
+        background: #f8f9fa;
+        padding: 32px;
+        border-radius: 12px;
+        margin-top: 32px;
+    }
+
+    .time-slots-section h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 24px;
+    }
+
+    .time-slots-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 12px;
+    }
+
+    .time-slot {
+        padding: 16px;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-weight: 600;
+        color: #2d3748;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .time-slot:hover {
+        border-color: #FF6B35;
+        transform: translateY(-2px);
+    }
+
+    .time-slot.selected {
+        background: linear-gradient(135deg, #FF6B35 0%, #0066CC 100%);
+        color: white;
+        border-color: transparent;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 8px;
+    }
+
+    .form-control {
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #FF6B35;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    .summary-section {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        margin-bottom: 32px;
+    }
+
+    .summary-group {
+        background: #f8f9fa;
+        padding: 32px;
+        border-radius: 12px;
+    }
+
+    .summary-group h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 24px;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+
+    .summary-item strong {
+        color: #2d3748;
+        font-weight: 600;
+        min-width: 120px;
+    }
+
+    .summary-item span {
+        color: #718096;
+        flex: 1;
+        padding: 0 16px;
+    }
+
+    .btn-edit {
+        padding: 6px 16px;
+        background: white;
+        color: #FF6B35;
+        border: 2px solid #FF6B35;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-edit:hover {
+        background: #FF6B35;
+        color: white;
+    }
+
+    .error-message {
+        background: #fee;
+        color: #c33;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        border-left: 4px solid #c33;
+    }
+
+    .wizard-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: flex-end;
+        margin-top: 32px;
+    }
+
+    .btn-back {
+        padding: 14px 24px;
+        background: white;
+        color: #718096;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-back:hover {
+        border-color: #718096;
+        color: #2d3748;
+    }
+
+    .btn-next,
+    .btn-confirm {
+        padding: 14px 32px;
+        background: linear-gradient(135deg, #FF6B35 0%, #0066CC 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-next:hover,
+    .btn-confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(255, 107, 53, 0.3);
+    }
+
+    .confirmation-section {
+        padding: 80px 20px;
+        background: #f8f9fa;
+        min-height: calc(100vh - 120px);
+        display: flex;
+        align-items: center;
+    }
+
+    .confirmation-card {
+        background: white;
+        padding: 60px;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .success-icon {
+        color: #10b981;
+        margin-bottom: 24px;
+    }
+
+    .confirmation-card h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 16px;
+    }
+
+    .confirmation-message {
+        font-size: 1.25rem;
+        color: #718096;
+        margin-bottom: 40px;
+    }
+
+    .booking-details {
+        background: #f8f9fa;
+        padding: 32px;
+        border-radius: 12px;
+        margin-bottom: 32px;
+        text-align: left;
+    }
+
+    .booking-details h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 24px;
+        text-align: center;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+
+    .detail-item strong {
+        color: #2d3748;
+    }
+
+    .detail-item span {
+        color: #718096;
+    }
+
+    .next-steps {
+        background: #eff6ff;
+        padding: 24px;
+        border-radius: 12px;
+        margin-bottom: 32px;
+        text-align: left;
+    }
+
+    .next-steps h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #0066CC;
+        margin-bottom: 16px;
+    }
+
+    .next-steps ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .next-steps li {
+        padding: 8px 0;
+        padding-left: 28px;
+        position: relative;
+        color: #2d3748;
+    }
+
+    .next-steps li::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: #10b981;
+        font-weight: bold;
+    }
+
+    .confirmation-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary {
+        display: inline-block;
+        padding: 14px 32px;
+        background: linear-gradient(135deg, #FF6B35 0%, #0066CC 100%);
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(255, 107, 53, 0.3);
+    }
+
+    .btn-secondary {
+        display: inline-block;
+        padding: 14px 32px;
+        background: white;
+        color: #FF6B35;
+        border: 2px solid #FF6B35;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+        background: #FF6B35;
+        color: white;
+    }
+
+    @@media (max-width: 768px) {
+        .hero-content h1 {
+            font-size: 2.5rem;
+        }
+
+        .lead {
+            font-size: 1.25rem;
+        }
+
+        .progress-bar {
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .progress-line {
+            width: 3px;
+            height: 40px;
+            margin: 0;
+        }
+
+        .wizard-card {
+            padding: 24px;
+        }
+
+        .calendar-grid {
+            gap: 4px;
+        }
+
+        .calendar-day {
+            font-size: 1rem;
+        }
+
+        .time-slots-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .wizard-actions {
+            flex-direction: column-reverse;
+        }
+
+        .btn-back,
+        .btn-next,
+        .btn-confirm {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .confirmation-card {
+            padding: 32px 24px;
+        }
+
+        .confirmation-card h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+@code {
+    private int currentStep = 1;
+    private bool isBooked = false;
+    private bool isSubmitting = false;
+    private DateTime? selectedDate;
+    private string selectedTime = string.Empty;
+    private string fullName = string.Empty;
+    private string email = string.Empty;
+    private string phone = string.Empty;
+    private string company = string.Empty;
+    private string message = string.Empty;
+    private string errorMessage = string.Empty;
+    private DateTime currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+
+    private string[] availableTimes = new[]
+    {
+        "9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM"
+    };
+
+    private class CalendarDay
+    {
+        public DateTime Date { get; set; }
+        public bool IsCurrentMonth { get; set; }
+        public bool IsPast { get; set; }
+        public bool IsWeekend { get; set; }
+    }
+
+    private List<CalendarDay> GetCalendarDays()
+    {
+        var days = new List<CalendarDay>();
+        var firstDayOfMonth = new DateTime(currentMonth.Year, currentMonth.Month, 1);
+        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+        var startDate = firstDayOfMonth.AddDays(-(int)firstDayOfMonth.DayOfWeek);
+
+        for (int i = 0; i < 42; i++)
+        {
+            var date = startDate.AddDays(i);
+            days.Add(new CalendarDay
+            {
+                Date = date,
+                IsCurrentMonth = date.Month == currentMonth.Month,
+                IsPast = date.Date < DateTime.Now.Date,
+                IsWeekend = date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday
+            });
+        }
+
+        return days;
+    }
+
+    private void PreviousMonth()
+    {
+        currentMonth = currentMonth.AddMonths(-1);
+    }
+
+    private void NextMonth()
+    {
+        currentMonth = currentMonth.AddMonths(1);
+    }
+
+    private void SelectDate(CalendarDay day)
+    {
+        if (day.IsPast || !day.IsCurrentMonth)
+            return;
+
+        selectedDate = day.Date;
+        errorMessage = string.Empty;
+    }
+
+    private void SelectTime(string time)
+    {
+        selectedTime = time;
+        errorMessage = string.Empty;
+    }
+
+    private void GoToStep1()
+    {
+        currentStep = 1;
+        errorMessage = string.Empty;
+    }
+
+    private void GoToStep2()
+    {
+        errorMessage = string.Empty;
+
+        if (!selectedDate.HasValue)
+        {
+            errorMessage = "Please select a date for your consultation.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(selectedTime))
+        {
+            errorMessage = "Please select a time for your consultation.";
+            return;
+        }
+
+        currentStep = 2;
+    }
+
+    private void GoToStep3()
+    {
+        errorMessage = string.Empty;
+
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            errorMessage = "Please enter your full name.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            errorMessage = "Please enter your email address.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(phone))
+        {
+            errorMessage = "Please enter your phone number.";
+            return;
+        }
+
+        currentStep = 3;
+    }
+
+    private async Task ConfirmBooking()
+    {
+        if (isSubmitting)
+            return;
+
+        isSubmitting = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var booking = new
+            {
+                FullName = fullName,
+                Email = email,
+                Phone = phone,
+                Company = company,
+                Message = message,
+                ConsultationDate = selectedDate!.Value,
+                ConsultationTime = selectedTime
+            };
+
+            var response = await Http.PostAsJsonAsync("/api/consultation/book", booking);
+
+            if (response.IsSuccessStatusCode)
+            {
+                isBooked = true;
+            }
+            else
+            {
+                errorMessage = "Unable to confirm your booking. Please try again or contact us directly.";
+            }
+        }
+        catch (Exception)
+        {
+            errorMessage = "An error occurred while booking your consultation. Please try again.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void BookAnother()
+    {
+        currentStep = 1;
+        isBooked = false;
+        selectedDate = null;
+        selectedTime = string.Empty;
+        fullName = string.Empty;
+        email = string.Empty;
+        phone = string.Empty;
+        company = string.Empty;
+        message = string.Empty;
+        errorMessage = string.Empty;
+        currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+    }
+}

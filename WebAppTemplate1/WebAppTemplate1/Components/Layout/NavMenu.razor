@@ -1,0 +1,174 @@
+﻿<nav class="navbar">
+    <div class="navbar-container">
+        <a class="navbar-brand" href="/">
+            <img src="/images/CSS_Logo.png" alt="Catalyst Software Solutions" class="logo-image" />
+        </a>
+
+        <input type="checkbox" id="navbar-toggle" class="navbar-toggle" />
+        <label for="navbar-toggle" class="navbar-toggle-label">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+
+        <div class="navbar-menu">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                Home
+            </NavLink>
+            <NavLink class="nav-link" href="about">
+                About
+            </NavLink>
+            <NavLink class="nav-link" href="portfolio">
+                Portfolio
+            </NavLink>
+            <NavLink class="nav-link" href="pricing">
+                Pricing
+            </NavLink>
+            <NavLink class="nav-link" href="consultation">
+                Consultation
+            </NavLink>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .navbar {
+        background: var(--gradient-primary);
+        color: var(--text-white);
+        padding: 0;
+        box-shadow: var(--shadow-sm);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .navbar-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        height: 70px;
+    }
+
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .logo-image {
+        height: 50px;
+        width: auto;
+        transition: opacity 0.3s ease;
+    }
+
+    .navbar-brand:hover {
+        opacity: 0.9;
+    }
+
+    .navbar-menu {
+        display: flex;
+        gap: 32px;
+        align-items: center;
+    }
+
+    .nav-link {
+        color: var(--text-white);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 1rem;
+        padding: 8px 16px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .nav-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-link.active {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 16px;
+        right: 16px;
+        height: 2px;
+        background: var(--text-white);
+    }
+
+    .navbar-toggle {
+        display: none;
+    }
+
+    .navbar-toggle-label {
+        display: none;
+        flex-direction: column;
+        cursor: pointer;
+        gap: 4px;
+    }
+
+    .navbar-toggle-label span {
+        display: block;
+        width: 25px;
+        height: 3px;
+        background: var(--text-white);
+        border-radius: 3px;
+        transition: all 0.3s ease;
+    }
+
+    @@media (max-width: 768px) {
+        .navbar-toggle-label {
+            display: flex;
+        }
+
+        .navbar-menu {
+            position: absolute;
+            top: 70px;
+            left: 0;
+            right: 0;
+            background: var(--gradient-primary);
+            flex-direction: column;
+            gap: 0;
+            align-items: stretch;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .navbar-toggle:checked ~ .navbar-menu {
+            max-height: 400px;
+        }
+
+        .navbar-toggle:checked ~ .navbar-toggle-label span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .navbar-toggle:checked ~ .navbar-toggle-label span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .navbar-toggle:checked ~ .navbar-toggle-label span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        .nav-link {
+            padding: 12px 16px;
+            border-radius: 0;
+        }
+
+        .nav-link.active::after {
+            display: none;
+        }
+    }
+</style>
+

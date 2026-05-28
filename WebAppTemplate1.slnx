@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="WebAppTemplate1/WebAppTemplate1.Client/WebAppTemplate1.Client.csproj" />
+  <Project Path="WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj" />
+</Solution>
