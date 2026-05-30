@@ -8,6 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Communication.Email" Version="1.1.0" />
+    <PackageReference Include="Azure.Identity" Version="1.21.0" />
+    <PackageReference Include="Microsoft.Graph" Version="6.1.0" />
     <ProjectReference Include="..\WebAppTemplate1.Client\WebAppTemplate1.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.8" />
   </ItemGroup>
