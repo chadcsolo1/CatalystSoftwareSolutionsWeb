@@ -1,35 +1,51 @@
 :root {
     /* Brand Colors - Catalyst Software Solutions */
-    --primary-orange: #FF6B35;
-    --primary-blue: #0066CC;
-    --gradient-start: #FF6B35;
-    --gradient-end: #0066CC;
+    /* Primary Colors */
+    --primary-orange: #F26A2C;
+    --catalyst-orange: #F26A2C;
+    --primary-blue: #1F6FB2;
+    --catalyst-blue: #1F6FB2;
+
+    /* Secondary Colors */
+    --catalyst-red: #D6453D;
+    --deep-navy: #0F2A4A;
+
+    /* Accent Colors */
+    --warm-amber: #F4A259;
+    --sky-blue: #5FAFE3;
+    --off-white: #F7F9FC;
+
+    /* Legacy/Compatibility */
+    --gradient-start: #F26A2C;
+    --gradient-end: #1F6FB2;
 
     /* Text Colors */
-    --text-dark: #2d3748;
+    --text-dark: #0F2A4A;
     --text-gray: #718096;
     --text-white: #ffffff;
 
     /* Background Colors */
     --bg-white: #ffffff;
-    --bg-light: #f8f9fa;
-    --bg-gray: #f5f7fa;
+    --bg-light: #F7F9FC;
+    --bg-gray: #F7F9FC;
     --bg-gray-alt: #e4e9f2;
 
     /* Border Colors */
     --border-light: #e2e8f0;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-    --gradient-overlay: linear-gradient(135deg, rgba(255, 107, 53, 0.95) 0%, rgba(0, 102, 204, 0.95) 100%);
-    --gradient-background: linear-gradient(135deg, var(--bg-gray) 0%, var(--bg-gray-alt) 100%);
+    --gradient-primary: linear-gradient(135deg, #F26A2C 0%, #1F6FB2 100%);
+    --gradient-overlay: linear-gradient(135deg, rgba(242, 106, 44, 0.95) 0%, rgba(31, 111, 178, 0.95) 100%);
+    --gradient-background: linear-gradient(135deg, #F7F9FC 0%, #e4e9f2 100%);
+    --gradient-accent: linear-gradient(135deg, #F4A259 0%, #5FAFE3 100%);
 
     /* Shadow */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
-    --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.1);
-    --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.15);
-    --shadow-orange: 0 8px 16px rgba(255, 107, 53, 0.3);
+    --shadow-sm: 0 2px 8px rgba(15, 42, 74, 0.1);
+    --shadow-md: 0 4px 6px rgba(15, 42, 74, 0.05);
+    --shadow-lg: 0 12px 24px rgba(15, 42, 74, 0.1);
+    --shadow-hover: 0 12px 24px rgba(15, 42, 74, 0.15);
+    --shadow-orange: 0 8px 16px rgba(242, 106, 44, 0.3);
+    --shadow-blue: 0 8px 16px rgba(31, 111, 178, 0.3);
 }
 
 html, body {
@@ -37,17 +53,22 @@ html, body {
 }
 
 a, .btn-link {
-    color: #006bb7;
+    color: #1F6FB2;
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: #F26A2C;
+    border-color: #F26A2C;
+}
+
+.btn-primary:hover {
+    background-color: #D6453D;
+    border-color: #D6453D;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #5FAFE3;
 }
 
 .content {

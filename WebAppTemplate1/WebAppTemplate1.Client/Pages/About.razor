@@ -218,7 +218,7 @@
     }
 
     .about-hero {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #F26A2C 0%, #1F6FB2 100%);
         color: white;
         padding: 100px 20px;
         text-align: center;
@@ -256,7 +256,7 @@
     .story-text h2 {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #2d3748;
+        color: var(--deep-navy);
         margin-bottom: 24px;
     }
 
@@ -276,23 +276,23 @@
     .image-placeholder {
         width: 100%;
         height: 400px;
-        background: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+        background: linear-gradient(135deg, #F7F9FC 0%, #e4e9f2 100%);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #667eea;
+        color: var(--catalyst-blue);
     }
 
     .about-what-we-do {
         padding: 80px 20px;
-        background: #f8f9fa;
+        background: #F7F9FC;
     }
 
     .about-what-we-do h2 {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #2d3748;
+        color: var(--deep-navy);
         text-align: center;
         margin-bottom: 16px;
     }
@@ -319,29 +319,29 @@
         border-radius: 12px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         transition: all 0.3s ease;
-        border-top: 4px solid #667eea;
+        border-top: 4px solid var(--catalyst-blue);
     }
 
     .service-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-        border-top-color: #FF6B35;
+        border-top-color: var(--catalyst-orange);
     }
 
     .service-icon {
-        color: #667eea;
+        color: var(--catalyst-blue);
         margin-bottom: 20px;
         transition: color 0.3s ease;
     }
 
     .service-card:hover .service-icon {
-        color: #FF6B35;
+        color: var(--catalyst-orange);
     }
 
     .service-card h3 {
         font-size: 1.5rem;
         font-weight: 600;
-        color: #2d3748;
+        color: var(--deep-navy);
         margin-bottom: 16px;
     }
 
@@ -362,7 +362,7 @@
     .tech-stack h3 {
         font-size: 1.75rem;
         font-weight: 600;
-        color: #2d3748;
+        color: var(--deep-navy);
         margin-bottom: 24px;
     }
 
@@ -376,7 +376,7 @@
     .tech-badge {
         display: inline-block;
         padding: 8px 20px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #F26A2C 0%, #1F6FB2 100%);
         color: white;
         border-radius: 20px;
         font-size: 0.9rem;
@@ -386,12 +386,12 @@
 
     .tech-badge:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 4px 12px rgba(242, 106, 44, 0.4);
     }
 
     .about-mission {
         padding: 80px 20px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #F26A2C 0%, #1F6FB2 100%);
         color: white;
         text-align: center;
     }
@@ -412,13 +412,13 @@
 
     .about-values {
         padding: 80px 20px;
-        background: #f8f9fa;
+        background: #F7F9FC;
     }
 
     .about-values h2 {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #2d3748;
+        color: var(--deep-navy);
         text-align: center;
         margin-bottom: 60px;
     }
@@ -443,11 +443,17 @@
     }
 
     .value-icon {
-        color: #FF6B35;
+        color: var(--catalyst-orange);
         margin-bottom: 20px;
     }
 
     .value-card h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--deep-navy);
+        margin-bottom: 12px;
+    }
+
         font-size: 1.5rem;
         font-weight: 600;
         color: #2d3748;
@@ -507,7 +513,7 @@
 
     .about-cta {
         padding: 80px 20px;
-        background: linear-gradient(135deg, #FF6B35 0%, #0066CC 100%);
+        background: linear-gradient(135deg, #F26A2C 0%, #1F6FB2 100%);
         color: white;
         text-align: center;
     }
@@ -528,7 +534,7 @@
         display: inline-block;
         padding: 14px 32px;
         background: white;
-        color: #667eea;
+        color: var(--catalyst-orange);
         border-radius: 8px;
         font-weight: 600;
         text-decoration: none;
@@ -538,6 +544,7 @@
     .btn-primary:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        background: var(--off-white);
     }
 
     @@media (max-width: 768px) {

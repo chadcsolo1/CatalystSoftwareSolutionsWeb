@@ -170,7 +170,7 @@
     }
 
     .hero-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #F26A2C 0%, #1F6FB2 100%);
         color: white;
         padding: 120px 20px;
         text-align: center;
@@ -214,12 +214,13 @@
 
     .btn-primary {
         background: white;
-        color: #667eea;
+        color: #F26A2C;
     }
 
     .btn-primary:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        background: #F7F9FC;
     }
 
     .btn-secondary {
@@ -230,7 +231,7 @@
 
     .btn-secondary:hover {
         background: white;
-        color: #667eea;
+        color: #F26A2C;
     }
 
     .btn-light {
@@ -253,21 +254,21 @@
     }
 
     .challenge-card {
-        border-left: 4px solid #f56565;
+        border-left: 4px solid var(--catalyst-red);
         transition: all 0.3s ease;
     }
 
     .challenge-card:hover {
-        border-left-color: #667eea;
+        border-left-color: var(--catalyst-orange);
         transform: translateY(-4px);
     }
 
     .challenge-card .feature-icon {
-        color: #f56565;
+        color: var(--catalyst-red);
     }
 
     .challenge-card:hover .feature-icon {
-        color: #667eea;
+        color: var(--catalyst-orange);
     }
 
     .challenges-cta {
@@ -275,13 +276,13 @@
         max-width: 700px;
         margin: 60px auto 0;
         padding: 40px;
-        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+        background: linear-gradient(135deg, rgba(242, 106, 44, 0.08) 0%, rgba(31, 111, 178, 0.08) 100%);
         border-radius: 12px;
     }
 
     .challenges-cta p {
         font-size: 1.25rem;
-        color: #2d3748;
+        color: var(--deep-navy);
         margin-bottom: 24px;
         font-weight: 500;
     }
@@ -300,7 +301,7 @@
     .section-header h2 {
         font-size: 2.5rem;
         font-weight: 700;
-        color: #2d3748;
+        color: var(--deep-navy);
         margin-bottom: 16px;
     }
 
@@ -331,14 +332,14 @@
     }
 
     .feature-icon {
-        color: #667eea;
+        color: var(--catalyst-blue);
         margin-bottom: 20px;
     }
 
     .feature-card h3 {
         font-size: 1.5rem;
         font-weight: 600;
-        color: #2d3748;
+        color: var(--deep-navy);
         margin-bottom: 12px;
     }
 
@@ -368,7 +369,7 @@
     .stat-number {
         font-size: 3rem;
         font-weight: 700;
-        color: #667eea;
+        color: var(--catalyst-orange);
         margin-bottom: 8px;
     }
 
