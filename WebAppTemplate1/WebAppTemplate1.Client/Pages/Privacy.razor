@@ -1,0 +1,150 @@
+@page "/privacy"
+
+<PageTitle>Privacy Policy - Catalyst Software Solutions</PageTitle>
+
+<div class="privacy-container">
+    <section class="privacy-hero">
+        <div class="hero-content">
+            <h1>Privacy Policy</h1>
+            <p class="lead">Your privacy is important to us</p>
+        </div>
+    </section>
+
+    <section class="privacy-content">
+        <div class="content-wrapper">
+            <div class="last-updated">
+                <strong>Last Updated:</strong> @DateTime.Now.ToString("MMMM dd, yyyy")
+            </div>
+
+            <h2>1. Information We Collect</h2>
+            <p>We collect information you provide directly to us, including when you:</p>
+            <ul>
+                <li>Request a consultation</li>
+                <li>Contact us via email or phone</li>
+                <li>Use our website services</li>
+            </ul>
+
+            <h2>2. How We Use Your Information</h2>
+            <p>We use the information we collect to:</p>
+            <ul>
+                <li>Provide, maintain, and improve our services</li>
+                <li>Respond to your inquiries and consultation requests</li>
+                <li>Send you technical notices and support messages</li>
+                <li>Communicate with you about services, updates, and promotional materials</li>
+            </ul>
+
+            <h2>3. Information Sharing</h2>
+            <p>We do not sell, trade, or otherwise transfer your personal information to third parties. This does not include trusted third parties who assist us in operating our website or conducting our business, as long as those parties agree to keep this information confidential.</p>
+
+            <h2>4. Data Security</h2>
+            <p>We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p>
+
+            <h2>5. Your Rights</h2>
+            <p>You have the right to:</p>
+            <ul>
+                <li>Access your personal information</li>
+                <li>Request correction of inaccurate data</li>
+                <li>Request deletion of your data</li>
+                <li>Opt-out of marketing communications</li>
+            </ul>
+
+            <h2>6. Cookies</h2>
+            <p>We use cookies and similar tracking technologies to improve your browsing experience and analyze website usage. You can control cookies through your browser settings.</p>
+
+            <h2>7. Contact Us</h2>
+            <p>If you have questions about this Privacy Policy, please contact us at:</p>
+            <p><a href="mailto:chad_solomon@catalystsoftwaresolutions.com">chad_solomon@catalystsoftwaresolutions.com</a></p>
+        </div>
+    </section>
+</div>
+
+<style>
+    .privacy-container {
+        width: 100%;
+    }
+
+    .privacy-hero {
+        background: linear-gradient(135deg, var(--catalyst-orange) 0%, var(--catalyst-blue) 100%);
+        color: white;
+        padding: 80px 20px;
+        text-align: center;
+    }
+
+    .hero-content h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    .lead {
+        font-size: 1.5rem;
+        opacity: 0.95;
+    }
+
+    .privacy-content {
+        padding: 60px 20px;
+        background: white;
+    }
+
+    .content-wrapper {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .last-updated {
+        background: var(--off-white);
+        padding: 16px;
+        border-left: 4px solid var(--catalyst-orange);
+        margin-bottom: 40px;
+        border-radius: 4px;
+    }
+
+    .privacy-content h2 {
+        color: var(--deep-navy);
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-top: 40px;
+        margin-bottom: 16px;
+    }
+
+    .privacy-content p {
+        color: var(--text-gray);
+        line-height: 1.8;
+        margin-bottom: 16px;
+    }
+
+    .privacy-content ul {
+        color: var(--text-gray);
+        line-height: 1.8;
+        margin-bottom: 24px;
+        padding-left: 24px;
+    }
+
+    .privacy-content li {
+        margin-bottom: 8px;
+    }
+
+    .privacy-content a {
+        color: var(--catalyst-blue);
+        text-decoration: none;
+    }
+
+    .privacy-content a:hover {
+        color: var(--catalyst-orange);
+        text-decoration: underline;
+    }
+
+    @@media (max-width: 768px) {
+        .hero-content h1 {
+            font-size: 2.5rem;
+        }
+
+        .lead {
+            font-size: 1.25rem;
+        }
+
+        .privacy-content h2 {
+            font-size: 1.5rem;
+        }
+    }
+</style>

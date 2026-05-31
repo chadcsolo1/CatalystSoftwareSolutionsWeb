@@ -1,0 +1,180 @@
+@page "/terms"
+
+<PageTitle>Terms of Service - Catalyst Software Solutions</PageTitle>
+
+<div class="terms-container">
+    <section class="terms-hero">
+        <div class="hero-content">
+            <h1>Terms of Service</h1>
+            <p class="lead">Please read these terms carefully</p>
+        </div>
+    </section>
+
+    <section class="terms-content">
+        <div class="content-wrapper">
+            <div class="last-updated">
+                <strong>Last Updated:</strong> @DateTime.Now.ToString("MMMM dd, yyyy")
+            </div>
+
+            <h2>1. Acceptance of Terms</h2>
+            <p>By accessing and using the Catalyst Software Solutions website and services, you accept and agree to be bound by the terms and provisions of this agreement.</p>
+
+            <h2>2. Services</h2>
+            <p>Catalyst Software Solutions provides custom software development, legacy system modernization, cloud solutions, and related technology consulting services. Specific terms for each engagement will be outlined in separate service agreements.</p>
+
+            <h2>3. Consultation Requests</h2>
+            <p>When you request a consultation:</p>
+            <ul>
+                <li>You agree to provide accurate and complete information</li>
+                <li>No contractual obligation exists until a formal service agreement is signed</li>
+                <li>Consultations are provided for informational purposes only</li>
+            </ul>
+
+            <h2>4. Intellectual Property</h2>
+            <p>All content on this website, including but not limited to text, graphics, logos, and software, is the property of Catalyst Software Solutions and is protected by copyright and trademark laws.</p>
+
+            <h2>5. Client Responsibilities</h2>
+            <p>When engaging our services, clients agree to:</p>
+            <ul>
+                <li>Provide timely feedback and necessary information</li>
+                <li>Maintain confidentiality of any credentials or access provided</li>
+                <li>Comply with payment terms outlined in service agreements</li>
+                <li>Use delivered software in accordance with agreed-upon terms</li>
+            </ul>
+
+            <h2>6. Warranties and Disclaimers</h2>
+            <p>While we strive for excellence, our services are provided "as is" unless otherwise specified in a service agreement. Specific warranties and guarantees will be outlined in individual contracts.</p>
+
+            <h2>7. Limitation of Liability</h2>
+            <p>Catalyst Software Solutions shall not be liable for any indirect, incidental, special, or consequential damages arising from the use of our services or website.</p>
+
+            <h2>8. Confidentiality</h2>
+            <p>We respect the confidentiality of client information and projects. Specific confidentiality terms will be outlined in non-disclosure agreements and service contracts.</p>
+
+            <h2>9. Payment Terms</h2>
+            <p>Payment terms for services will be specified in individual service agreements. Generally:</p>
+            <ul>
+                <li>Invoices are due within 30 days unless otherwise specified</li>
+                <li>Late payments may incur additional fees</li>
+                <li>Milestone-based payments may be required for larger projects</li>
+            </ul>
+
+            <h2>10. Termination</h2>
+            <p>Either party may terminate a service agreement according to the terms specified in that agreement. Termination conditions and obligations will be clearly outlined in service contracts.</p>
+
+            <h2>11. Changes to Terms</h2>
+            <p>We reserve the right to modify these terms at any time. Continued use of our services after changes are posted constitutes acceptance of the modified terms.</p>
+
+            <h2>12. Governing Law</h2>
+            <p>These terms shall be governed by and construed in accordance with the laws of the United States, without regard to its conflict of law provisions.</p>
+
+            <h2>13. Contact Information</h2>
+            <p>For questions about these Terms of Service, please contact us at:</p>
+            <p><a href="mailto:chad_solomon@catalystsoftwaresolutions.com">chad_solomon@catalystsoftwaresolutions.com</a></p>
+
+            <div class="terms-notice">
+                <strong>Note:</strong> These general terms apply to the use of our website. Specific service engagements will be governed by separate, detailed service agreements.
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+    .terms-container {
+        width: 100%;
+    }
+
+    .terms-hero {
+        background: linear-gradient(135deg, var(--catalyst-orange) 0%, var(--catalyst-blue) 100%);
+        color: white;
+        padding: 80px 20px;
+        text-align: center;
+    }
+
+    .hero-content h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    .lead {
+        font-size: 1.5rem;
+        opacity: 0.95;
+    }
+
+    .terms-content {
+        padding: 60px 20px;
+        background: white;
+    }
+
+    .content-wrapper {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .last-updated {
+        background: var(--off-white);
+        padding: 16px;
+        border-left: 4px solid var(--catalyst-orange);
+        margin-bottom: 40px;
+        border-radius: 4px;
+    }
+
+    .terms-content h2 {
+        color: var(--deep-navy);
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-top: 40px;
+        margin-bottom: 16px;
+    }
+
+    .terms-content p {
+        color: var(--text-gray);
+        line-height: 1.8;
+        margin-bottom: 16px;
+    }
+
+    .terms-content ul {
+        color: var(--text-gray);
+        line-height: 1.8;
+        margin-bottom: 24px;
+        padding-left: 24px;
+    }
+
+    .terms-content li {
+        margin-bottom: 8px;
+    }
+
+    .terms-content a {
+        color: var(--catalyst-blue);
+        text-decoration: none;
+    }
+
+    .terms-content a:hover {
+        color: var(--catalyst-orange);
+        text-decoration: underline;
+    }
+
+    .terms-notice {
+        background: rgba(242, 106, 44, 0.1);
+        border: 1px solid var(--catalyst-orange);
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 40px;
+        color: var(--text-dark);
+    }
+
+    @@media (max-width: 768px) {
+        .hero-content h1 {
+            font-size: 2.5rem;
+        }
+
+        .lead {
+            font-size: 1.25rem;
+        }
+
+        .terms-content h2 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
