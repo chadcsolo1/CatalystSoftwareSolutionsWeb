@@ -10,7 +10,7 @@ on:
 # Environment variables used throughout the workflow
 env:
   AZURE_WEBAPP_NAME: 'CatalystSoftwareSolutionsMain'    # Replace with your Azure Web App name
-  AZURE_WEBAPP_PACKAGE_PATH: './publish'           # Path to the solution
+  AZURE_WEBAPP_PACKAGE_PATH: '.'           # Path to the solution
   DOTNET_VERSION: '10.0.x'                 # .NET version to use
 
 jobs:
