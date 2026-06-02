@@ -46,7 +46,7 @@ jobs:
 
     # Step 6: Publish the application
     - name: Publish application
-      run: dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj --configuration Release --runtime linux-x64 --self-contained false --output ./publish /p:UseAppHost=false
+      run: rm -rf publish dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj --configuration Release --runtime linux-x64 --self-contained false --output ./publish /p:UseAppHost=false
       # working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
     # Step 7: Deploy to Azure Web App
@@ -55,7 +55,7 @@ jobs:
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/publish
+        package: publish
 
     # Step 8: Post-deployment verification (optional)
     # - name: Verify deployment
