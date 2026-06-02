@@ -31,23 +31,23 @@ jobs:
     # Step 3: Restore NuGet packages
     - name: Restore dependencies
       run: dotnet restore
-      working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      # working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
     # Step 4: Build the solution in Release mode
     - name: Build solution
       run: dotnet build --configuration Release --no-restore
-      working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      # working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
     # Step 5: Run unit tests (if any exist)
     - name: Run tests
       run: dotnet test --configuration Release --no-build --verbosity normal
-      working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      # working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
       continue-on-error: true  # Continue even if no tests exist
 
     # Step 6: Publish the application
     - name: Publish application
-      run: dotnet publish WebAppTemplate1/WebAppTemplate1.csproj --configuration Release --runtime linux-x64 --self-contained false --output ./publish
-      working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      run: dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj --configuration Release --runtime linux-x64 --self-contained false --output ./publish
+      # working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
     # Step 7: Deploy to Azure Web App
     - name: Deploy to Azure Web App
