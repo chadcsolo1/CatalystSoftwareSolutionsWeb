@@ -58,7 +58,7 @@ jobs:
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/publish
 
     # Step 8: Post-deployment verification (optional)
-    - name: Verify deployment
-      run: |
-        echo "Deployment completed successfully!"
-        echo "Application URL: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"
+    # - name: Verify deployment
+    #   run: |
+    #     echo "Deployment completed successfully!"
+    #     echo "Application URL: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"
