@@ -46,7 +46,7 @@ jobs:
 
     # Step 6: Publish the application
     - name: Publish application
-      run: dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj --configuration Release --runtime linux-x64 --self-contained false --output ./publish
+      run: dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj --configuration Release --runtime linux-x64 --self-contained false --output ./publish /p:UseAppHost=false
       # working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
     # Step 7: Deploy to Azure Web App
