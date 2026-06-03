@@ -9,7 +9,7 @@ on:
 
 # Environment variables used throughout the workflow
 env:
-  AZURE_WEBAPP_NAME: 'CatalystSoftwareSolutionsMain'    # Replace with your Azure Web App name
+  AZURE_WEBAPP_NAME: 'catalystsoftwaresolutions-Main-Centeral-US'    # Replace with your Azure Web App name
   AZURE_WEBAPP_PACKAGE_PATH: '.'           # Path to the solution
   DOTNET_VERSION: '10.0.x'                 # .NET version to use
 
@@ -49,14 +49,14 @@ jobs:
     #   run: rm -rf publish dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj --configuration Release --runtime linux-x64 --self-contained false --output ./publish /p:UseAppHost=false
       # working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
     - name: Publish
-      run: |
-        rm -rf publish
-        dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj \
-          -c Release \
-          -r linux-x64 \
-          --self-contained false \
-          -o publish \
-          /p:UseAppHost=false
+      run: dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj --configuration Release --output ./publish
+      #   rm -rf publish
+      #   dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj \
+      #     -c Release \
+      #     -r linux-x64 \
+      #     --self-contained false \
+      #     -o publish \
+      #     /p:UseAppHost=false
 
     # Step 7: Deploy to Azure Web App
     - name: Deploy to Azure Web App
