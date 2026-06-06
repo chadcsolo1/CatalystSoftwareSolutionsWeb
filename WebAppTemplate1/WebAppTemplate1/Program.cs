@@ -2,6 +2,7 @@ using WebAppTemplate1.Client.Pages;
 using WebAppTemplate1.Components;
 using WebAppTemplate1.Services;
 using WebAppTemplate1.Services.Email;
+using WebAppTemplate1.Features.Portfolio;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,14 +10,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
-// Add controllers for API endpoints
-builder.Services.AddControllers();
+// Add controllers for API endpoints (ensure all controllers in the assembly are discovered)
+builder.Services.AddControllers()
+    .AddApplicationPart(typeof(Program).Assembly);
+
+// Enable response caching for API performance
+builder.Services.AddResponseCaching();
 
 // Register HttpClient for server-side pre-rendering
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7018/") });
 
 // Register email services with all providers
 builder.Services.AddEmailServices(builder.Configuration);
+
+// Register portfolio service (Dependency Inversion Principle)
+builder.Services.AddSingleton<IPortfolioService, PortfolioService>();
 
 var app = builder.Build();
 
@@ -34,6 +42,7 @@ else
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
+app.UseResponseCaching(); // Enable response caching middleware
 app.UseAntiforgery();
 
 app.MapStaticAssets();
