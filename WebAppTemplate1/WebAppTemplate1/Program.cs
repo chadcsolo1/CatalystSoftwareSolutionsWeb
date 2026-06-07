@@ -3,6 +3,7 @@ using WebAppTemplate1.Components;
 using WebAppTemplate1.Services;
 using WebAppTemplate1.Services.Email;
 using WebAppTemplate1.Features.Portfolio;
+using WebAppTemplate1.Services.BlobSevice;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,9 @@ builder.Services.AddEmailServices(builder.Configuration);
 
 // Register portfolio service (Dependency Inversion Principle)
 builder.Services.AddSingleton<IPortfolioService, PortfolioService>();
+
+//Azure Blob Service
+builder.Services.AddScoped<AzureBlobService>();
 
 var app = builder.Build();
 
