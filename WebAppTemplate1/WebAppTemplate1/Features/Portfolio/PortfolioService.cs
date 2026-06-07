@@ -66,21 +66,41 @@ public sealed class PortfolioService : IPortfolioService
             },
             new PortfolioProject
             {
-                Id = "ecommerce-platform",
-                Title = "E-Commerce Platform",
-                Category = "E-Commerce • Web Design",
-                Description = "A full-featured e-commerce solution with inventory management, payment processing, and customer analytics.",
-                Images = new List<string>().AsReadOnly(),
-                Technologies = new List<string> { ".NET", "SQL Server", "Stripe" }.AsReadOnly()
+                Id = "marias-restaurant",
+                Title = "Maria's Restaurant Website",
+                Category = "Web Design • Food & Beverage",
+                Description = "A stylish modern design that expresses the Maria's personality and the culture surrounding the cuisine.",
+                Images = new List<string>
+                {
+                    "/images/marias/marias_1.png",
+                    "/images/marias/marias_2.png",
+                    "/images/marias/marias_3.png",
+                    "/images/marias/marias_4.png",
+                    "/images/marias/marias_5.png",
+                    "/images/marias/marias_6.png",
+                    "/images/marias/marias_7.png"
+                }.AsReadOnly(),
+                Technologies = new List<string> { ".NET", "Blazor", "CSS3", "HTML5" }.AsReadOnly(),
+                ProjectUrl = null
             },
             new PortfolioProject
             {
-                Id = "fitness-app",
-                Title = "Fitness Tracking App",
-                Category = "Mobile Apps • Health",
-                Description = "Mobile application for tracking workouts, nutrition, and fitness goals with real-time data synchronization.",
-                Images = new List<string>().AsReadOnly(),
-                Technologies = new List<string> { ".NET MAUI", "Azure", "SignalR" }.AsReadOnly()
+                Id = "fitness-trainer-website",
+                Title = "Fitness Trainer Website",
+                Category = "Web Design • Health & Fitness",
+                Description = "An intensly designed website for a personal trainer that matches their fierceness and bold personality.",
+                Images = new List<string>
+                {
+                    "/images/Trainer/Fit_1.png",
+                    "/images/Trainer/Fit_2.png",
+                    "/images/Trainer/Fit_3.png",
+                    "/images/Trainer/Fit_4.png",
+                    "/images/Trainer/Fit_5.png",
+                    "/images/Trainer/Fit_6.png",
+                    "/images/Trainer/Fit_7.png",
+                    "/images/Trainer/Fit_8.png",
+                }.AsReadOnly(),
+                Technologies = new List<string> { ".NET", "Blazor", "CSS3", "HTML5"  }.AsReadOnly()
             },
             new PortfolioProject
             {
@@ -88,7 +108,8 @@ public sealed class PortfolioService : IPortfolioService
                 Title = "Brand Identity Design",
                 Category = "Branding • Design",
                 Description = "Complete brand identity package including logo design, color palette, typography, and brand guidelines.",
-                Images = new List<string>().AsReadOnly()
+                Images = new List<string>().AsReadOnly(),
+                Technologies = new List<string> { ".NET", "Blazor", "CSS3", "HTML5"  }.AsReadOnly()
             },
             new PortfolioProject
             {
