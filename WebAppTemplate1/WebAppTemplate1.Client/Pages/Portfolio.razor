@@ -1,0 +1,951 @@
+@page "/portfolio"
+@rendermode InteractiveWebAssembly
+@using WebAppTemplate1.Client.Features.Portfolio
+@inject HttpClient Http
+@inject ILogger<Portfolio> Logger
+
+
+<PageTitle>Portfolio</PageTitle>
+
+<div class="portfolio-container">
+    <section class="portfolio-hero">
+        <div class="hero-content">
+            <h1>Our Portfolio</h1>
+            <p class="lead">Explore our latest projects and success stories</p>
+        </div>
+    </section>
+
+    <section class="portfolio-filters">
+        <div class="content-wrapper">
+            <div class="filter-buttons">
+                <button class="filter-btn @(activeFilter == "All" ? "active" : "")" @onclick='() => FilterProjects("All")'>All</button>
+                <button class="filter-btn @(activeFilter == "Web" ? "active" : "")" @onclick='() => FilterProjects("Web")'>Web Design</button>
+                <button class="filter-btn @(activeFilter == "Mobile" ? "active" : "")" @onclick='() => FilterProjects("Mobile")'>Mobile Apps</button>
+                <button class="filter-btn @(activeFilter == "E-Commerce" ? "active" : "")" @onclick='() => FilterProjects("E-Commerce")'>E-Commerce</button>
+                <button class="filter-btn @(activeFilter == "Branding" ? "active" : "")" @onclick='() => FilterProjects("Branding")'>Branding</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="portfolio-grid-section">
+        <div class="content-wrapper">
+            @if (isLoading)
+            {
+                <div class="portfolio-grid">
+                    @for (int i = 0; i < 6; i++)
+                    {
+                        <div class="portfolio-item skeleton-card">
+                            <div class="skeleton-image">
+                                <div class="shimmer"></div>
+                            </div>
+                            <div class="skeleton-content">
+                                <div class="skeleton-title shimmer"></div>
+                                <div class="skeleton-category shimmer"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else if (filteredProjects.Count == 0)
+            {
+                <div class="error-state">
+                    <p>No projects found. Check back soon!</p>
+                </div>
+            }
+            else
+            {
+                <div class="portfolio-grid">
+                    @foreach (var project in filteredProjects)
+                    {
+                        <div class="portfolio-item" @onclick="() => OpenModal(project)">
+                            <div class="portfolio-image">
+                                @if (project.Images.Any())
+                                {
+                                    <img src="@project.Images.First()" alt="@project.Title" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div class="image-placeholder">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                                        </svg>
+                                    </div>
+                                }
+                                <div class="portfolio-overlay">
+                                    <h3>@project.Title</h3>
+                                    <p>@project.Category</p>
+                                    <span class="view-project">View Project →</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+
+    @* Modal for project gallery *@
+    @if (showModal && selectedProject != null)
+    {
+        <div class="modal-overlay" @onclick="CloseModal">
+            <div class="modal-content" @onclick:stopPropagation="true">
+                <button class="modal-close" @onclick="CloseModal">&times;</button>
+                <div class="modal-header">
+                    <h2>@selectedProject.Title</h2>
+                    <p class="modal-category">@selectedProject.Category</p>
+                </div>
+                <div class="modal-body">
+                    <div class="gallery-main">
+                        @if (selectedProject.Images.Any())
+                        {
+                            <img src="@selectedProject.Images[currentImageIndex]" alt="@selectedProject.Title" class="main-image" />
+
+                            @if (selectedProject.Images.Count > 1)
+                            {
+                                <button class="gallery-nav prev" @onclick="PreviousImage" @onclick:stopPropagation="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="15 18 9 12 15 6"></polyline>
+                                    </svg>
+                                </button>
+                                <button class="gallery-nav next" @onclick="NextImage" @onclick:stopPropagation="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                </button>
+                            }
+                        }
+                    </div>
+
+                    @if (selectedProject.Images.Count > 1)
+                    {
+                        <div class="gallery-thumbnails">
+                            @for (int i = 0; i < selectedProject.Images.Count; i++)
+                            {
+                                var index = i;
+                                <div class="thumbnail @(currentImageIndex == index ? "active" : "")" @onclick="() => SelectImage(index)" @onclick:stopPropagation="true">
+                                    <img src="@selectedProject.Images[index]" alt="Thumbnail @(index + 1)" />
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(selectedProject.Description))
+                    {
+                        <div class="project-description">
+                            <h3>About This Project</h3>
+                            <p>@selectedProject.Description</p>
+                        </div>
+                    }
+
+                    @if (selectedProject.Technologies != null && selectedProject.Technologies.Any())
+                    {
+                        <div class="project-technologies">
+                            <h3>Technologies Used</h3>
+                            <div class="tech-tags">
+                                @foreach (var tech in selectedProject.Technologies)
+                                {
+                                    <span class="tech-tag">@tech</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <section class="portfolio-stats">
+        <div class="content-wrapper">
+            <h2>Our Impact</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">250+</div>
+                    <div class="stat-label">Projects Completed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">150+</div>
+                    <div class="stat-label">Happy Clients</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">95%</div>
+                    <div class="stat-label">Client Retention</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">30+</div>
+                    <div class="stat-label">Industry Awards</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="portfolio-testimonial">
+        <div class="content-wrapper">
+            <div class="testimonial-card">
+                <div class="quote-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"></path>
+                    </svg>
+                </div>
+                <p class="testimonial-text">"Working with this team was an absolute pleasure. They transformed our vision into reality and exceeded all our expectations. The attention to detail and commitment to excellence is unmatched."</p>
+                <div class="testimonial-author">
+                    <strong>Sarah Johnson</strong>
+                    <span>CEO, TechStart Inc.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="portfolio-cta">
+        <div class="content-wrapper">
+            <h2>Ready to Start Your Project?</h2>
+            <p>Let's create something amazing together.</p>
+            <a href="/contact" class="btn-primary">Get Started</a>
+        </div>
+    </section>
+</div>
+
+<style>
+    .portfolio-container {
+        width: 100%;
+    }
+
+    .portfolio-hero {
+        background: linear-gradient(135deg, var(--catalyst-orange) 0%, var(--catalyst-blue) 100%);
+        color: white;
+        padding: 100px 20px;
+        text-align: center;
+    }
+
+    .hero-content h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    .lead {
+        font-size: 1.5rem;
+        opacity: 0.95;
+    }
+
+    .content-wrapper {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .portfolio-filters {
+        padding: 40px 20px;
+        background: white;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 10px 24px;
+        background: white;
+        color: #718096;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+        border-color: var(--catalyst-blue);
+        color: var(--catalyst-blue);
+    }
+
+    .filter-btn.active {
+        background: linear-gradient(135deg, var(--catalyst-orange) 0%, var(--catalyst-blue) 100%);
+        color: white;
+        border-color: transparent;
+    }
+
+    .portfolio-grid-section {
+        padding: 80px 20px;
+        background: var(--off-white);
+        min-height: 400px;
+    }
+
+    /* Skeleton Loading Cards */
+    .skeleton-card {
+        pointer-events: none;
+        cursor: default;
+    }
+
+    .skeleton-card:hover {
+        transform: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .skeleton-image {
+        position: relative;
+        width: 100%;
+        padding-bottom: 75%;
+        background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        overflow: hidden;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .skeleton-content {
+        padding: 20px;
+        background: white;
+        border-radius: 0 0 12px 12px;
+    }
+
+    .skeleton-title {
+        height: 24px;
+        width: 70%;
+        background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 4px;
+        margin-bottom: 12px;
+    }
+
+    .skeleton-category {
+        height: 16px;
+        width: 50%;
+        background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 4px;
+    }
+
+    @@keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    /* Error State */
+    .error-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 400px;
+        text-align: center;
+    }
+
+    .error-state p {
+        font-size: 1.25rem;
+        color: #718096;
+    }
+
+    .portfolio-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 32px;
+    }
+
+    .portfolio-item {
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .portfolio-item:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .portfolio-image {
+        position: relative;
+        width: 100%;
+        padding-bottom: 75%;
+        background: white;
+        overflow: hidden;
+    }
+
+    .portfolio-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .image-placeholder {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, var(--off-white) 0%, #e4e9f2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--catalyst-blue);
+    }
+
+    .portfolio-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(242, 106, 44, 0.95) 0%, rgba(31, 111, 178, 0.95) 100%);
+        color: white;
+        padding: 32px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .portfolio-item:hover .portfolio-overlay {
+        opacity: 1;
+    }
+
+    .portfolio-overlay h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .portfolio-overlay p {
+        font-size: 1rem;
+        opacity: 0.9;
+        margin-bottom: 16px;
+    }
+
+    .view-project {
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform 0.3s ease;
+        display: inline-block;
+    }
+
+    .view-project:hover {
+        transform: translateX(4px);
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        padding: 20px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 16px;
+        max-width: 1200px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        animation: slideUp 0.3s ease;
+    }
+
+    @@keyframes slideUp {
+        from {
+            transform: translateY(50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        border: none;
+        font-size: 28px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--deep-navy);
+        transition: all 0.3s ease;
+        z-index: 10;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-close:hover {
+        background: var(--catalyst-red);
+        color: white;
+        transform: rotate(90deg);
+    }
+
+    .modal-header {
+        padding: 40px 40px 20px;
+        border-bottom: 2px solid var(--off-white);
+    }
+
+    .modal-header h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--deep-navy);
+        margin-bottom: 8px;
+    }
+
+    .modal-category {
+        font-size: 1rem;
+        color: var(--catalyst-orange);
+        font-weight: 600;
+    }
+
+    .modal-body {
+        padding: 40px;
+    }
+
+    .gallery-main {
+        position: relative;
+        width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #f8f9fa;
+        margin-bottom: 24px;
+    }
+
+    .main-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        max-height: 600px;
+        object-fit: contain;
+    }
+
+    .gallery-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: white;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        z-index: 5;
+    }
+
+    .gallery-nav:hover {
+        background: var(--catalyst-orange);
+        color: white;
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .gallery-nav svg {
+        stroke: currentColor;
+    }
+
+    .gallery-nav.prev {
+        left: 20px;
+    }
+
+    .gallery-nav.next {
+        right: 20px;
+    }
+
+    .gallery-thumbnails {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding: 8px 0;
+        margin-bottom: 32px;
+    }
+
+    .thumbnail {
+        flex-shrink: 0;
+        width: 100px;
+        height: 75px;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .thumbnail:hover {
+        border-color: var(--catalyst-blue);
+    }
+
+    .thumbnail.active {
+        border-color: var(--catalyst-orange);
+    }
+
+    .thumbnail img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .project-description {
+        padding: 24px;
+        background: var(--off-white);
+        border-radius: 12px;
+        border-left: 4px solid var(--catalyst-blue);
+        margin-bottom: 24px;
+    }
+
+    .project-description h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--deep-navy);
+        margin-bottom: 12px;
+    }
+
+    .project-description p {
+        font-size: 1rem;
+        line-height: 1.8;
+        color: #4a5568;
+    }
+
+    .project-technologies {
+        padding: 24px;
+        background: var(--off-white);
+        border-radius: 12px;
+        border-left: 4px solid var(--catalyst-orange);
+    }
+
+    .project-technologies h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--deep-navy);
+        margin-bottom: 16px;
+    }
+
+    .tech-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .tech-tag {
+        padding: 6px 16px;
+        background: white;
+        color: var(--catalyst-blue);
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        border: 2px solid var(--catalyst-blue);
+    }
+
+    .portfolio-stats {
+        padding: 80px 20px;
+        background: white;
+        text-align: center;
+    }
+
+    .portfolio-stats h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--deep-navy);
+        margin-bottom: 60px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 40px;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .stat-item {
+        padding: 20px;
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--catalyst-orange);
+        margin-bottom: 8px;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        color: #718096;
+        font-weight: 500;
+    }
+
+    .portfolio-testimonial {
+        padding: 80px 20px;
+        background: var(--off-white);
+    }
+
+    .testimonial-card {
+        max-width: 900px;
+        margin: 0 auto;
+        background: white;
+        padding: 60px;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        text-align: center;
+    }
+
+    .quote-icon {
+        color: var(--catalyst-blue);
+        margin-bottom: 24px;
+    }
+
+    .testimonial-text {
+        font-size: 1.25rem;
+        line-height: 1.8;
+        color: var(--deep-navy);
+        margin-bottom: 32px;
+        font-style: italic;
+    }
+
+    .testimonial-author {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .testimonial-author strong {
+        font-size: 1.125rem;
+        color: var(--deep-navy);
+    }
+
+    .testimonial-author span {
+        color: #718096;
+    }
+
+    .portfolio-cta {
+        padding: 80px 20px;
+        background: linear-gradient(135deg, var(--catalyst-orange) 0%, var(--catalyst-blue) 100%);
+        color: white;
+        text-align: center;
+    }
+
+    .portfolio-cta h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    .portfolio-cta p {
+        font-size: 1.25rem;
+        margin-bottom: 32px;
+        opacity: 0.95;
+    }
+
+    .btn-primary {
+        display: inline-block;
+        padding: 14px 32px;
+        background: white;
+        color: var(--catalyst-blue);
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    @@media (max-width: 768px) {
+        .hero-content h1 {
+            font-size: 2.5rem;
+        }
+
+        .lead {
+            font-size: 1.25rem;
+        }
+
+        .portfolio-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .testimonial-card {
+            padding: 40px 24px;
+        }
+
+        .testimonial-text {
+            font-size: 1.125rem;
+        }
+
+        .portfolio-stats h2,
+        .portfolio-cta h2 {
+            font-size: 2rem;
+        }
+
+        .modal-content {
+            max-height: 95vh;
+        }
+
+        .modal-header {
+            padding: 60px 24px 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .gallery-nav {
+            width: 40px;
+            height: 40px;
+        }
+
+        .gallery-nav.prev {
+            left: 10px;
+        }
+
+        .gallery-nav.next {
+            right: 10px;
+        }
+
+        .thumbnail {
+            width: 80px;
+            height: 60px;
+        }
+    }
+</style>
+
+@code {
+    private List<PortfolioProject> allProjects = new();
+    private List<PortfolioProject> filteredProjects = new();
+    private string activeFilter = "All";
+    private bool showModal = false;
+    private PortfolioProject? selectedProject = null;
+    private int currentImageIndex = 0;
+    private bool isLoading = true;
+    private bool hasRendered = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !hasRendered)
+        {
+            hasRendered = true;
+
+            // Small delay to ensure skeleton is visible
+            await Task.Delay(100);
+
+            await LoadProjectsAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadProjectsAsync()
+    {
+        try
+        {
+            var projects = await Http.GetFromJsonAsync<List<PortfolioProject>>("api/portfolio");
+
+            if (projects != null)
+            {
+                allProjects = projects;
+                filteredProjects = projects;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load portfolio projects");
+            // Keep the list empty, which will show "No projects found"
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void FilterProjects(string filter)
+    {
+        activeFilter = filter;
+
+        if (filter == "All")
+        {
+            filteredProjects = allProjects;
+        }
+        else
+        {
+            filteredProjects = allProjects
+                .Where(p => p.Category.Contains(filter, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    private void OpenModal(PortfolioProject project)
+    {
+        selectedProject = project;
+        currentImageIndex = 0;
+        showModal = true;
+    }
+
+    private void CloseModal()
+    {
+        showModal = false;
+        selectedProject = null;
+        currentImageIndex = 0;
+    }
+
+    private void NextImage()
+    {
+        if (selectedProject != null && selectedProject.Images.Count > 0)
+        {
+            currentImageIndex = (currentImageIndex + 1) % selectedProject.Images.Count;
+        }
+    }
+
+    private void PreviousImage()
+    {
+        if (selectedProject != null && selectedProject.Images.Count > 0)
+        {
+            currentImageIndex = (currentImageIndex - 1 + selectedProject.Images.Count) % selectedProject.Images.Count;
+        }
+    }
+
+    private void SelectImage(int index)
+    {
+        currentImageIndex = index;
+    }
+}
