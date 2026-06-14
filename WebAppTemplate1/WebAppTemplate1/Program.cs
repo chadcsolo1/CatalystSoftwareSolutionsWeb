@@ -2,6 +2,7 @@ using WebAppTemplate1.Client.Pages;
 using WebAppTemplate1.Components;
 using WebAppTemplate1.Services;
 using WebAppTemplate1.Services.Email;
+using WebAppTemplate1.Services.Calendar;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,11 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https:/
 
 // Register email services with all providers
 builder.Services.AddEmailServices(builder.Configuration);
+
+// Register calendar services
+builder.Services.Configure<CalendarOptions>(
+    builder.Configuration.GetSection(CalendarOptions.SectionName));
+builder.Services.AddScoped<ICalendarService, OutlookCalendarService>();
 
 var app = builder.Build();
 
