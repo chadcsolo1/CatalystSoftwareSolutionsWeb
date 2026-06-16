@@ -8,9 +8,14 @@ namespace WebAppTemplate1.Services
     public interface IEmailService
     {
         /// <summary>
-        /// Sends a consultation confirmation email.
+        /// Sends a consultation confirmation email to the client.
         /// </summary>
         Task SendConsultationConfirmationAsync(Models.ConsultationBooking booking);
+
+        /// <summary>
+        /// Sends a consultation notification email to the business owner.
+        /// </summary>
+        Task SendConsultationNotificationAsync(Models.ConsultationBooking booking);
 
         /// <summary>
         /// Sends a generic email message.

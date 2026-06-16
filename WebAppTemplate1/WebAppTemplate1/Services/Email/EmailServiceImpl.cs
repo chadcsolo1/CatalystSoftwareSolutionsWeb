@@ -25,6 +25,8 @@ namespace WebAppTemplate1.Services.Email
 
         public async Task<EmailResult> SendEmailAsync(EmailMessage message)
         {
+            //
+            //message.ToEmail = "chad_solomon@catalystsoftwaresolutions.com;";
             // Try primary provider
             var primaryProvider = _providerFactory.GetProvider();
             var result = await primaryProvider.SendEmailAsync(message);
@@ -88,6 +90,30 @@ namespace WebAppTemplate1.Services.Email
 
             _logger.LogInformation("Consultation confirmation email sent to {Email} via {Provider}",
                 booking.Email, result.ProviderUsed);
+        }
+
+        public async Task SendConsultationNotificationAsync(Models.ConsultationBooking booking)
+        {
+            var message = new EmailMessage
+            {
+                ToEmail = "chad_solomon@catalystsoftwaresolutions.com",
+                ToName = "Chad Solomon",
+                Subject = $"New Consultation Booked - {booking.FullName}",
+                HtmlBody = GenerateNotificationEmailBody(booking)
+            };
+
+            var result = await SendEmailAsync(message);
+
+            if (!result.IsSuccess)
+            {
+                _logger.LogError("Failed to send consultation notification email: {Error}", result.ErrorMessage);
+                // Don't throw - notification failure shouldn't block the booking
+            }
+            else
+            {
+                _logger.LogInformation("Consultation notification email sent to business owner via {Provider}",
+                    result.ProviderUsed);
+            }
         }
 
         private string GenerateConsultationEmailBody(Models.ConsultationBooking booking)
@@ -161,6 +187,89 @@ namespace WebAppTemplate1.Services.Email
         <div class='footer'>
             <p>Catalyst Software Solutions | info@catalystsoftware.com | (555) 123-4567</p>
             <p>This is an automated confirmation email. Please do not reply directly to this message.</p>
+        </div>
+    </div>
+</body>
+</html>";
+        }
+
+        private string GenerateNotificationEmailBody(Models.ConsultationBooking booking)
+        {
+            return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #2d3748; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #FF6B35 0%, #0066CC 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }}
+        .header h1 {{ color: white; margin: 0; font-size: 28px; }}
+        .content {{ background: #ffffff; padding: 30px; border: 1px solid #e2e8f0; }}
+        .details {{ background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }}
+        .detail-row {{ display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }}
+        .detail-row:last-child {{ border-bottom: none; }}
+        .detail-label {{ font-weight: 600; color: #2d3748; }}
+        .detail-value {{ color: #718096; }}
+        .footer {{ background: #f8f9fa; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; color: #718096; }}
+        .action-required {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>🔔 New Consultation Booked</h1>
+        </div>
+        <div class='content'>
+            <div class='action-required'>
+                <strong>⚠️ Action Required:</strong> A new consultation has been scheduled. Please review the details below and ensure your calendar is up to date.
+            </div>
+
+            <div class='details'>
+                <h3 style='margin-top: 0;'>Appointment Details</h3>
+                <div class='detail-row'>
+                    <span class='detail-label'>Date:</span>
+                    <span class='detail-value'>{booking.ConsultationDate:dddd, MMMM dd, yyyy}</span>
+                </div>
+                <div class='detail-row'>
+                    <span class='detail-label'>Time:</span>
+                    <span class='detail-value'>{booking.ConsultationTime} EST</span>
+                </div>
+                <div class='detail-row'>
+                    <span class='detail-label'>Duration:</span>
+                    <span class='detail-value'>30 minutes</span>
+                </div>
+            </div>
+
+            <div class='details'>
+                <h3 style='margin-top: 0;'>Client Information</h3>
+                <div class='detail-row'>
+                    <span class='detail-label'>Name:</span>
+                    <span class='detail-value'>{booking.FullName}</span>
+                </div>
+                <div class='detail-row'>
+                    <span class='detail-label'>Email:</span>
+                    <span class='detail-value'>{booking.Email}</span>
+                </div>
+                <div class='detail-row'>
+                    <span class='detail-label'>Phone:</span>
+                    <span class='detail-value'>{booking.Phone}</span>
+                </div>
+                {(!string.IsNullOrWhiteSpace(booking.Company) ? $@"
+                <div class='detail-row'>
+                    <span class='detail-label'>Company:</span>
+                    <span class='detail-value'>{booking.Company}</span>
+                </div>" : "")}
+                {(!string.IsNullOrWhiteSpace(booking.Message) ? $@"
+                <div class='detail-row'>
+                    <span class='detail-label'>Message:</span>
+                    <span class='detail-value'>{booking.Message}</span>
+                </div>" : "")}
+            </div>
+
+            <p><strong>Note:</strong> This consultation has been automatically added to your Outlook calendar.</p>
+        </div>
+        <div class='footer'>
+            <p>Catalyst Software Solutions | Automated Booking Notification</p>
         </div>
     </div>
 </body>
