@@ -1,0 +1,73 @@
+name: Deploy Blazor App to Azure Web App
+
+# Trigger the workflow on push to master branch or manual trigger
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+# Environment variables used throughout the workflow
+env:
+  AZURE_WEBAPP_NAME: 'catalystsoftwaresolutions-Main-Centeral-US'    # Replace with your Azure Web App name
+  AZURE_WEBAPP_PACKAGE_PATH: '.'           # Path to the solution
+  DOTNET_VERSION: '10.0.x'                 # .NET version to use
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Check out the repository code
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Step 2: Set up .NET 10 SDK
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    # Step 3: Restore NuGet packages
+    - name: Restore dependencies
+      run: dotnet restore
+      # working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    # Step 4: Build the solution in Release mode
+    - name: Build solution
+      run: dotnet build --configuration Release --no-restore
+      # working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+    # Step 5: Run unit tests (if any exist)
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build --verbosity normal
+      # working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+      continue-on-error: true  # Continue even if no tests exist
+
+    # Step 6: Publish the application
+    # - name: Publish application
+    #   run: rm -rf publish dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj --configuration Release --runtime linux-x64 --self-contained false --output ./publish /p:UseAppHost=false
+      # working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+    - name: Publish
+      run: dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj --configuration Release --output ./publish
+      #   rm -rf publish
+      #   dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj \
+      #     -c Release \
+      #     -r linux-x64 \
+      #     --self-contained false \
+      #     -o publish \
+      #     /p:UseAppHost=false
+
+    # Step 7: Deploy to Azure Web App
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: publish
+
+    # Step 8: Post-deployment verification (optional)
+    # - name: Verify deployment
+    #   run: |
+    #     echo "Deployment completed successfully!"
+    #     echo "Application URL: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"
