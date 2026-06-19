@@ -80,15 +80,31 @@
                             {
                                 <div class="time-slots-section">
                                     <h3>Available Times for @selectedDate.Value.ToString("dddd, MMMM dd")</h3>
-                                    <div class="time-slots-grid">
-                                        @foreach (var time in availableTimes)
-                                        {
-                                            <button class="time-slot @(selectedTime == time ? "selected" : "")"
-                                                    @onclick="() => SelectTime(time)">
-                                                @time
-                                            </button>
-                                        }
-                                    </div>
+
+                                    @if (isLoadingTimes)
+                                    {
+                                        <div class="loading-times">
+                                            <p>Loading available times...</p>
+                                        </div>
+                                    }
+                                    else if (availableTimes.Count > 0)
+                                    {
+                                        <div class="time-slots-grid">
+                                            @foreach (var time in availableTimes)
+                                            {
+                                                <button class="time-slot @(selectedTime == time ? "selected" : "")"
+                                                        @onclick="() => SelectTime(time)">
+                                                    @time
+                                                </button>
+                                            }
+                                        </div>
+                                    }
+                                    else if (!string.IsNullOrEmpty(errorMessage))
+                                    {
+                                        <div class="no-times-message">
+                                            <p>@errorMessage</p>
+                                        </div>
+                                    }
                                 </div>
                             }
                         </div>
@@ -569,6 +585,24 @@
         border-color: transparent;
     }
 
+    .loading-times,
+    .no-times-message {
+        text-align: center;
+        padding: 32px;
+        color: #4a5568;
+    }
+
+    .loading-times p {
+        font-size: 1.125rem;
+        color: #0066CC;
+        font-weight: 500;
+    }
+
+    .no-times-message p {
+        font-size: 1rem;
+        color: #718096;
+    }
+
     .form-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -939,6 +973,7 @@
     private int currentStep = 1;
     private bool isBooked = false;
     private bool isSubmitting = false;
+    private bool isLoadingTimes = false;
     private DateTime? selectedDate;
     private string selectedTime = string.Empty;
     private string fullName = string.Empty;
@@ -949,10 +984,7 @@
     private string errorMessage = string.Empty;
     private DateTime currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
 
-    private string[] availableTimes = new[]
-    {
-        "9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM"
-    };
+    private List<string> availableTimes = new List<string>();
 
     private class CalendarDay
     {
@@ -994,19 +1026,72 @@
         currentMonth = currentMonth.AddMonths(1);
     }
 
-    private void SelectDate(CalendarDay day)
+    private async Task SelectDate(CalendarDay day)
     {
         if (day.IsPast || !day.IsCurrentMonth)
             return;
 
         selectedDate = day.Date;
+        selectedTime = string.Empty; // Clear selected time when date changes
         errorMessage = string.Empty;
+
+        // Load available times for the selected date
+        await LoadAvailableTimesAsync();
     }
 
     private void SelectTime(string time)
     {
         selectedTime = time;
         errorMessage = string.Empty;
+    }
+
+    private async Task LoadAvailableTimesAsync()
+    {
+        if (!selectedDate.HasValue)
+        {
+            availableTimes.Clear();
+            return;
+        }
+
+        isLoadingTimes = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var dateParam = selectedDate.Value.ToString("yyyy-MM-dd");
+            var response = await Http.GetFromJsonAsync<AvailableTimesResponse>($"/api/consultation/available-times?date={dateParam}");
+
+            if (response != null && response.Success)
+            {
+                availableTimes = response.AvailableSlots ?? new List<string>();
+
+                if (availableTimes.Count == 0)
+                {
+                    errorMessage = "No available times for this date. Please select another date.";
+                }
+            }
+            else
+            {
+                availableTimes.Clear();
+                errorMessage = "Unable to load available times. Please try again.";
+            }
+        }
+        catch (Exception)
+        {
+            availableTimes.Clear();
+            errorMessage = "Error loading available times. Please try again or select another date.";
+        }
+        finally
+        {
+            isLoadingTimes = false;
+        }
+    }
+
+    private class AvailableTimesResponse
+    {
+        public bool Success { get; set; }
+        public List<string> AvailableSlots { get; set; } = new();
+        public bool CalendarIntegrated { get; set; }
     }
 
     private void GoToStep1()

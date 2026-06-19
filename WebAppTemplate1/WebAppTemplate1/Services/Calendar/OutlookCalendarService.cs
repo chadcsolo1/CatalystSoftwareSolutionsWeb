@@ -83,9 +83,10 @@ namespace WebAppTemplate1.Services.Calendar
                 var availableSlots = new List<string>();
                 foreach (var slot in allSlots)
                 {
-                    var slotTime = TimeSpan.Parse(slot);
+                    // Parse time slot string (e.g., "09:00 AM")
+                    var slotTimeSpan = ParseTimeSlot(slot);
                     var slotStart = TimeZoneInfo.ConvertTimeToUtc(
-                        new DateTime(date.Year, date.Month, date.Day, slotTime.Hours, slotTime.Minutes, 0),
+                        new DateTime(date.Year, date.Month, date.Day, slotTimeSpan.Hours, slotTimeSpan.Minutes, 0),
                         timeZone);
                     var slotEnd = slotStart.AddMinutes(ConsultationDurationMinutes);
 
@@ -102,8 +103,17 @@ namespace WebAppTemplate1.Services.Calendar
                             var eventEnd = DateTime.Parse(evt.End.DateTime);
 
                             // Check if slot overlaps with existing event (including buffer)
-                            if (!(slotEnd.AddMinutes(BufferMinutes) <= eventStart || slotStart >= eventEnd.AddMinutes(BufferMinutes)))
+                            // Slot is unavailable if:
+                            // 1. Slot starts before event ends AND
+                            // 2. Slot ends after event starts
+                            // This catches all overlap scenarios including partial overlaps
+                            bool overlaps = slotStart < eventEnd.AddMinutes(BufferMinutes) && 
+                                           slotEnd.AddMinutes(BufferMinutes) > eventStart;
+
+                            if (overlaps)
                             {
+                                _logger.LogDebug("Slot {Slot} conflicts with event '{EventSubject}' ({EventStart} - {EventEnd})",
+                                    slot, evt.Subject, eventStart, eventEnd);
                                 isAvailable = false;
                                 break;
                             }
@@ -228,6 +238,41 @@ Contact Information:
             }
 
             return slots;
+        }
+
+        /// <summary>
+        /// Parses a time slot string (e.g., "09:00 AM") into a TimeSpan.
+        /// </summary>
+        private TimeSpan ParseTimeSlot(string timeSlot)
+        {
+            // Format: "HH:MM AM/PM"
+            var parts = timeSlot.Split(' ');
+            if (parts.Length != 2)
+            {
+                throw new FormatException($"Invalid time slot format: {timeSlot}");
+            }
+
+            var timeParts = parts[0].Split(':');
+            if (timeParts.Length != 2)
+            {
+                throw new FormatException($"Invalid time format: {parts[0]}");
+            }
+
+            var hour = int.Parse(timeParts[0]);
+            var minute = int.Parse(timeParts[1]);
+            var ampm = parts[1].ToUpperInvariant();
+
+            // Convert 12-hour to 24-hour format
+            if (ampm == "PM" && hour != 12)
+            {
+                hour += 12;
+            }
+            else if (ampm == "AM" && hour == 12)
+            {
+                hour = 0;
+            }
+
+            return new TimeSpan(hour, minute, 0);
         }
     }
 }
