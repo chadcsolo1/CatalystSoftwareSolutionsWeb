@@ -116,6 +116,7 @@
         flex-direction: column;
         cursor: pointer;
         gap: 4px;
+        padding: 4px;
     }
 
     .navbar-toggle-label span {
@@ -125,6 +126,7 @@
         background: var(--text-white);
         border-radius: 3px;
         transition: all 0.3s ease;
+        transform-origin: center;
     }
 
     @@media (max-width: 768px) {
@@ -141,27 +143,34 @@
             flex-direction: column;
             gap: 0;
             align-items: stretch;
-            padding: 20px;
+            padding: 0 20px;
             box-shadow: var(--shadow-sm);
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease, visibility 0s linear 0.3s, padding 0.3s ease;
         }
 
         .navbar-toggle:checked ~ .navbar-menu {
             max-height: 400px;
+            opacity: 1;
+            visibility: visible;
+            padding: 20px;
+            transition: max-height 0.3s ease, opacity 0.3s ease, visibility 0s linear 0s, padding 0.3s ease;
         }
 
         .navbar-toggle:checked ~ .navbar-toggle-label span:nth-child(1) {
-            transform: rotate(45deg) translate(5px, 5px);
+            transform: translateY(7px) rotate(45deg);
         }
 
         .navbar-toggle:checked ~ .navbar-toggle-label span:nth-child(2) {
             opacity: 0;
+            transform: scale(0);
         }
 
         .navbar-toggle:checked ~ .navbar-toggle-label span:nth-child(3) {
-            transform: rotate(-45deg) translate(7px, -7px);
+            transform: translateY(-7px) rotate(-45deg);
         }
 
         .nav-link {
