@@ -171,6 +171,6 @@ The email functionality consists of:
 
 For additional help configuring email:
 - Email: info@catalystsoftware.com
-- Phone: (555) 123-4567
+- Phone: (423) 370-8724
 - Microsoft Graph Documentation: https://docs.microsoft.com/graph/
 

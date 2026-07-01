@@ -172,9 +172,8 @@ namespace WebAppTemplate1.Services.Email
 
             <h3>What's Next?</h3>
             <ul>
-                <li>A calendar invite has been sent to your email</li>
-                <li>We'll send you a reminder 24 hours before your consultation</li>
-                <li>If you need to reschedule, please reply to this email or call us at (555) 123-4567</li>
+                <li>This consultation will take place over phone. Please expect the phone call to come from (423) 370-8724</li>
+                <li>If you need to reschedule, please reply to this email or call us at (423) 370-8724</li>
             </ul>
 
             <p>We look forward to speaking with you!</p>
@@ -185,8 +184,8 @@ namespace WebAppTemplate1.Services.Email
             </p>
         </div>
         <div class='footer'>
-            <p>Catalyst Software Solutions | info@catalystsoftware.com | (555) 123-4567</p>
-            <p>This is an automated confirmation email. Please do not reply directly to this message.</p>
+            <p>Catalyst Software Solutions | chad_solomon@catalystsoftwaresolutions.com | (423) 370-8724</p>
+            <p>This is an automated confirmation email.</p>
         </div>
     </div>
 </body>
