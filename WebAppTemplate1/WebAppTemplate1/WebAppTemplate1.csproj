@@ -16,6 +16,9 @@
     <PackageReference Include="SendGrid" Version="9.29.3" />
     <ProjectReference Include="..\WebAppTemplate1.Client\WebAppTemplate1.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.8" />
+    <!-- Google Calendar API -->
+    <PackageReference Include="Google.Apis.Calendar.v3" Version="1.68.0" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.77.0" />
   </ItemGroup>
 
 </Project>

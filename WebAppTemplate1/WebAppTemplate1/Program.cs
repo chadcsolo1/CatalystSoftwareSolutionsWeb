@@ -22,7 +22,10 @@ builder.Services.AddEmailServices(builder.Configuration);
 // Register calendar services
 builder.Services.Configure<CalendarOptions>(
     builder.Configuration.GetSection(CalendarOptions.SectionName));
-builder.Services.AddScoped<ICalendarService, OutlookCalendarService>();
+// Configure Google calendar options and register GoogleCalendarService as the calendar implementation.
+builder.Services.Configure<GoogleCalendarOptions>(
+    builder.Configuration.GetSection(GoogleCalendarOptions.SectionName));
+builder.Services.AddScoped<ICalendarService, GoogleCalendarService>();
 
 var app = builder.Build();
 
