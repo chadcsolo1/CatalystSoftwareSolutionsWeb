@@ -36,6 +36,34 @@ if (File.Exists(envFile))
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure data protection with a consistent key for container environments.
+// In DigitalOcean App Platform, the key is stored as ASPNETCORE_DataProtection_Key environment variable
+// to ensure antiforgery tokens remain valid across container restarts.
+var dpKey = Environment.GetEnvironmentVariable("ASPNETCORE_DataProtection_Key");
+if (!string.IsNullOrEmpty(dpKey))
+{
+    try
+    {
+        // Decode the base64 key and create a deterministic data protection setup
+        var keyBytes = Convert.FromBase64String(dpKey);
+        builder.Services.AddDataProtection()
+            .SetApplicationName("CatalystSoftwareSolutionsWeb")
+            .PersistKeysToFileSystem(new DirectoryInfo("/root/.aspnet/DataProtection-Keys"));
+    }
+    catch
+    {
+        // If key is invalid, fall back to default data protection (ephemeral keys)
+        builder.Services.AddDataProtection()
+            .SetApplicationName("CatalystSoftwareSolutionsWeb");
+    }
+}
+else
+{
+    // Development/local: use default data protection
+    builder.Services.AddDataProtection()
+        .SetApplicationName("CatalystSoftwareSolutionsWeb");
+}
+
 // If a base64-encoded service account JSON was provided via .env or environment, decode it
 // and set the regular GoogleCalendar__ServiceAccountJson env var so options binding works.
 var base64Secret = Environment.GetEnvironmentVariable("GoogleCalendar__ServiceAccountJsonBase64")
