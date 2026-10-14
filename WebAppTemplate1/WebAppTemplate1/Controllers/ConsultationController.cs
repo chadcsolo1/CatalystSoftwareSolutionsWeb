@@ -12,15 +12,18 @@ namespace WebAppTemplate1.Controllers
         private readonly IEmailService _emailService;
         private readonly ICalendarService _calendarService;
         private readonly ILogger<ConsultationController> _logger;
+        private readonly IHostEnvironment _env;
 
         public ConsultationController(
             IEmailService emailService, 
             ICalendarService calendarService,
-            ILogger<ConsultationController> logger)
+            ILogger<ConsultationController> logger,
+            IHostEnvironment env)
         {
             _emailService = emailService;
             _calendarService = calendarService;
             _logger = logger;
+            _env = env;
         }
 
         [HttpGet("available-times")]
@@ -47,6 +50,13 @@ namespace WebAppTemplate1.Controllers
                     var defaultSlots = GetDefaultTimeSlots(consultationDate);
                     return Ok(new { success = true, availableSlots = defaultSlots, calendarIntegrated = false });
                 }
+                catch (Exception ex)
+                {
+                    // Any other calendar integration error should degrade gracefully and return default slots
+                    _logger.LogWarning(ex, "Calendar integration failed. Returning default time slots.");
+                    var defaultSlots = GetDefaultTimeSlots(consultationDate);
+                    return Ok(new { success = true, availableSlots = defaultSlots, calendarIntegrated = false });
+                }
             }
             catch (Exception ex)
             {
@@ -57,10 +67,8 @@ namespace WebAppTemplate1.Controllers
 
         private List<string> GetDefaultTimeSlots(DateTime date)
         {
-            // Only return slots for business days (Mon, Tue, Fri)
-            if (date.DayOfWeek != DayOfWeek.Monday && 
-                date.DayOfWeek != DayOfWeek.Tuesday && 
-                date.DayOfWeek != DayOfWeek.Friday)
+            // Only return slots for business days (Monday - Friday)
+            if (date.DayOfWeek < DayOfWeek.Monday || date.DayOfWeek > DayOfWeek.Friday)
             {
                 return new List<string>();
             }

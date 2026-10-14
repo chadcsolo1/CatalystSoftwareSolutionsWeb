@@ -1,10 +1,60 @@
+using System.Text;
+using System.IO;
 using WebAppTemplate1.Client.Pages;
 using WebAppTemplate1.Components;
 using WebAppTemplate1.Services;
 using WebAppTemplate1.Services.Email;
 using WebAppTemplate1.Services.Calendar;
 
+// Load optional .env file from the current working directory and set environment variables.
+// This allows storing local secrets in a .env file during development. Keys should use
+// the double-underscore convention for nested configuration (e.g. GoogleCalendar__ServiceAccountJsonBase64).
+var envFile = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+if (File.Exists(envFile))
+{
+    foreach (var raw in File.ReadAllLines(envFile))
+    {
+        var line = raw.Trim();
+        if (string.IsNullOrEmpty(line) || line.StartsWith("#"))
+            continue;
+
+        var idx = line.IndexOf('=');
+        if (idx <= 0)
+            continue;
+
+        var key = line.Substring(0, idx).Trim();
+        var val = line.Substring(idx + 1).Trim();
+        // Remove optional surrounding quotes
+        if ((val.StartsWith("\"") && val.EndsWith("\"")) || (val.StartsWith("'") && val.EndsWith("'")))
+        {
+            val = val.Substring(1, val.Length - 2);
+        }
+
+        Environment.SetEnvironmentVariable(key, val);
+    }
+}
+
 var builder = WebApplication.CreateBuilder(args);
+
+// If a base64-encoded service account JSON was provided via .env or environment, decode it
+// and set the regular GoogleCalendar__ServiceAccountJson env var so options binding works.
+var base64Secret = Environment.GetEnvironmentVariable("GoogleCalendar__ServiceAccountJsonBase64")
+                   ?? builder.Configuration["GoogleCalendar:ServiceAccountJsonBase64"];
+if (!string.IsNullOrEmpty(base64Secret))
+{
+    try
+    {
+        var json = Encoding.UTF8.GetString(Convert.FromBase64String(base64Secret));
+        // Set the decoded JSON into the application's configuration so the options binder
+        // sees it. Environment.SetEnvironmentVariable after the ConfigurationRoot is built
+        // won't update builder.Configuration, so write into configuration directly.
+        builder.Configuration["GoogleCalendar:ServiceAccountJson"] = json;
+    }
+    catch
+    {
+        // ignore decode errors here; the app will surface configuration problems when binding
+    }
+}
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

@@ -16,10 +16,14 @@ namespace WebAppTemplate1.Services.Calendar
         private readonly ILogger<GoogleCalendarService> _logger;
         private readonly CalendarOptions _calendarOptions;
 
+        // Default business hours: Monday through Friday, 8:00 - 17:00
+        // Update here or make configurable if you need different hours per day.
         private readonly Dictionary<DayOfWeek, (TimeSpan Start, TimeSpan End)> _businessHours = new()
         {
             { DayOfWeek.Monday, (new TimeSpan(8, 0, 0), new TimeSpan(17, 0, 0)) },
             { DayOfWeek.Tuesday, (new TimeSpan(8, 0, 0), new TimeSpan(17, 0, 0)) },
+            { DayOfWeek.Wednesday, (new TimeSpan(8, 0, 0), new TimeSpan(17, 0, 0)) },
+            { DayOfWeek.Thursday, (new TimeSpan(8, 0, 0), new TimeSpan(17, 0, 0)) },
             { DayOfWeek.Friday, (new TimeSpan(8, 0, 0), new TimeSpan(17, 0, 0)) }
         };
 
@@ -40,9 +44,17 @@ namespace WebAppTemplate1.Services.Calendar
                 throw new InvalidOperationException("Google service account JSON is not configured. Set GoogleCalendar:ServiceAccountJson in configuration or environment secrets.");
             }
 
-            // Create credential from JSON and scope to Calendar
+            // Create credential from JSON, scope to Calendar, and impersonate the calendar owner.
+            // Domain-wide delegation must be enabled for the service account in Google Workspace
+            // and the service account must be authorized to impersonate the target user.
+            if (string.IsNullOrWhiteSpace(_calendarOptions.CalendarOwnerEmail))
+            {
+                throw new InvalidOperationException("CalendarOwnerEmail must be configured for impersonation (Calendar:CalendarOwnerEmail).");
+            }
+
             var credential = GoogleCredential.FromJson(gaOpts.ServiceAccountJson)
-                .CreateScoped(CalendarService.Scope.Calendar);
+                .CreateScoped(CalendarService.Scope.Calendar)
+                .CreateWithUser(_calendarOptions.CalendarOwnerEmail);
 
             _calendarService = new CalendarService(new BaseClientService.Initializer
             {
@@ -159,7 +171,8 @@ namespace WebAppTemplate1.Services.Calendar
                 var insertReq = _calendarService.Events.Insert(newEvent, _calendarOptions.CalendarOwnerEmail);
                 var created = await insertReq.ExecuteAsync();
 
-                _logger.LogInformation("Calendar event created successfully. Event ID: {EventId}", created.Id);
+                _logger.LogInformation("Calendar event created successfully. Event ID: {EventId}, Organizer: {Organizer}, Creator: {Creator}, Link: {Link}",
+                    created.Id, created?.Organizer?.Email, created?.Creator?.Email, created?.HtmlLink);
                 return created.Id ?? string.Empty;
             }
             catch (Exception ex)
