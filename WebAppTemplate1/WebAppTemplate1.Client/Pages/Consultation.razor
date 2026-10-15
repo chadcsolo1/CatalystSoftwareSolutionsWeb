@@ -1,6 +1,7 @@
 @page "/consultation"
 @rendermode InteractiveWebAssembly
 @inject HttpClient Http
+@inject IJSRuntime JS
 @using System.Net.Http.Json
 
 <PageTitle>Schedule a Consultation</PageTitle>
@@ -1154,6 +1155,22 @@
 
         try
         {
+            // Get the browser's timezone using JavaScript Interop
+            string? clientTimezone = null;
+            try
+            {
+                // Dynamically import the timezone module and get the timezone
+                var module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/timezone.js");
+                clientTimezone = await module.InvokeAsync<string>("getClientTimezone");
+                await module.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                // If we can't get timezone via JS, proceed without it (graceful degradation)
+                System.Diagnostics.Debug.WriteLine($"Failed to get client timezone: {ex.Message}");
+                clientTimezone = null;
+            }
+
             var booking = new
             {
                 FullName = fullName,
@@ -1162,7 +1179,8 @@
                 Company = company,
                 Message = message,
                 ConsultationDate = selectedDate!.Value,
-                ConsultationTime = selectedTime
+                ConsultationTime = selectedTime,
+                ClientTimeZone = clientTimezone
             };
 
             var response = await Http.PostAsJsonAsync("/api/consultation/book", booking);
