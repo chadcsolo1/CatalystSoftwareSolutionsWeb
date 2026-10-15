@@ -5,6 +5,7 @@ using WebAppTemplate1.Components;
 using WebAppTemplate1.Services;
 using WebAppTemplate1.Services.Email;
 using WebAppTemplate1.Services.Calendar;
+using Microsoft.AspNetCore.DataProtection;
 
 // Load optional .env file from the current working directory and set environment variables.
 // This allows storing local secrets in a .env file during development. Keys should use
@@ -47,21 +48,18 @@ if (!string.IsNullOrEmpty(dpKey))
         // Decode the base64 key and create a deterministic data protection setup
         var keyBytes = Convert.FromBase64String(dpKey);
         builder.Services.AddDataProtection()
-            .SetApplicationName("CatalystSoftwareSolutionsWeb")
             .PersistKeysToFileSystem(new DirectoryInfo("/root/.aspnet/DataProtection-Keys"));
     }
     catch
     {
         // If key is invalid, fall back to default data protection (ephemeral keys)
-        builder.Services.AddDataProtection()
-            .SetApplicationName("CatalystSoftwareSolutionsWeb");
+        builder.Services.AddDataProtection();
     }
 }
 else
 {
     // Development/local: use default data protection
-    builder.Services.AddDataProtection()
-        .SetApplicationName("CatalystSoftwareSolutionsWeb");
+    builder.Services.AddDataProtection();
 }
 
 // If a base64-encoded service account JSON was provided via .env or environment, decode it
