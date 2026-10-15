@@ -153,8 +153,35 @@ namespace WebAppTemplate1.Services.Calendar
                 // Parse time from booking. Expect format HH:mm AM/PM or HH:mm
                 var timePart = booking.ConsultationTime;
                 var dt = DateTime.Parse(timePart);
+
+                // Create a datetime in the user's local time first
                 var startLocal = new DateTime(booking.ConsultationDate.Year, booking.ConsultationDate.Month, booking.ConsultationDate.Day, dt.Hour, dt.Minute, 0, DateTimeKind.Unspecified);
                 var endLocal = startLocal.AddMinutes(ConsultationDurationMinutes);
+
+                // Convert from browser's local time (assumed to be user's timezone) to America/New_York
+                // If booking.ClientTimeZone is provided, use it; otherwise assume the times are already in America/New_York
+                if (!string.IsNullOrEmpty(booking.ClientTimeZone))
+                {
+                    try
+                    {
+                        // Get the client's timezone
+                        var clientTz = TimeZoneInfo.FindSystemTimeZoneById(booking.ClientTimeZone);
+                        var clientTime = new DateTimeOffset(startLocal, clientTz.GetUtcOffset(startLocal));
+
+                        // Convert to UTC, then to America/New_York
+                        var nyTz = TimeZoneInfo.FindSystemTimeZoneById(tz);
+                        var utcTime = clientTime.ToUniversalTime();
+                        var nyTime = TimeZoneInfo.ConvertTime(utcTime.DateTime, TimeZoneInfo.Utc, nyTz);
+
+                        startLocal = new DateTime(nyTime.Year, nyTime.Month, nyTime.Day, nyTime.Hour, nyTime.Minute, 0, DateTimeKind.Unspecified);
+                        endLocal = startLocal.AddMinutes(ConsultationDurationMinutes);
+                    }
+                    catch
+                    {
+                        // If timezone conversion fails, log warning and use time as-is
+                        _logger.LogWarning("Failed to convert timezone {ClientTimezone}. Using time as-is.", booking.ClientTimeZone);
+                    }
+                }
 
                 var newEvent = new Event
                 {

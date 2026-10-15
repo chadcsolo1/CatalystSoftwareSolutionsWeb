@@ -14,6 +14,7 @@ RUN dotnet restore WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj
 COPY . .
 
 # Publish the server project (this also builds/publishes the Client WASM project as a dependency)
+# Remove --no-restore to ensure all NuGet packages are restored before publishing
 RUN dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj \
 	-c Release \
 	-o /app/publish
