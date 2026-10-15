@@ -17,7 +17,6 @@ COPY . .
 RUN dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj \
 	-c Release \
 	-o /app/publish \
-	--no-restore
 
 ########################################
 # Runtime stage
