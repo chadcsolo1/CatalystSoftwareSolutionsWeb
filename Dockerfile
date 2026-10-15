@@ -16,7 +16,7 @@ COPY . .
 # Publish the server project (this also builds/publishes the Client WASM project as a dependency)
 RUN dotnet publish WebAppTemplate1/WebAppTemplate1/WebAppTemplate1.csproj \
 	-c Release \
-	-o /app/publish \
+	-o /app/publish
 
 ########################################
 # Runtime stage
