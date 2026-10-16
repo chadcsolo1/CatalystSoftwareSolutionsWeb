@@ -164,22 +164,30 @@ namespace WebAppTemplate1.Services.Calendar
                 {
                     try
                     {
+                        // JavaScript sends IANA timezone names (e.g., "America/New_York")
+                        // but .NET Windows expects Windows timezone names (e.g., "Eastern Standard Time")
+                        // Try IANA name first, then convert to Windows name
+                        string windowsTimezoneName = ConvertIanaToWindowsTimezone(booking.ClientTimeZone);
+
                         // Get the client's timezone
-                        var clientTz = TimeZoneInfo.FindSystemTimeZoneById(booking.ClientTimeZone);
+                        var clientTz = TimeZoneInfo.FindSystemTimeZoneById(windowsTimezoneName);
                         var clientTime = new DateTimeOffset(startLocal, clientTz.GetUtcOffset(startLocal));
 
                         // Convert to UTC, then to America/New_York
-                        var nyTz = TimeZoneInfo.FindSystemTimeZoneById(tz);
+                        var nyTz = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
                         var utcTime = clientTime.ToUniversalTime();
                         var nyTime = TimeZoneInfo.ConvertTime(utcTime.DateTime, TimeZoneInfo.Utc, nyTz);
 
                         startLocal = new DateTime(nyTime.Year, nyTime.Month, nyTime.Day, nyTime.Hour, nyTime.Minute, 0, DateTimeKind.Unspecified);
                         endLocal = startLocal.AddMinutes(ConsultationDurationMinutes);
+
+                        _logger.LogInformation("Timezone conversion successful. Client TZ: {ClientTz} ({WindowsTz}) -> NY Time", 
+                            booking.ClientTimeZone, windowsTimezoneName);
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         // If timezone conversion fails, log warning and use time as-is
-                        _logger.LogWarning("Failed to convert timezone {ClientTimezone}. Using time as-is.", booking.ClientTimeZone);
+                        _logger.LogWarning(ex, "Failed to convert timezone {ClientTimezone}. Using time as-is.", booking.ClientTimeZone);
                     }
                 }
 
@@ -206,6 +214,89 @@ namespace WebAppTemplate1.Services.Calendar
             {
                 _logger.LogError(ex, "Failed to create calendar event. Booking will proceed without calendar integration.");
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Convert IANA timezone name to Windows timezone name.
+        /// IANA names (e.g., "America/New_York") need to be converted to Windows names (e.g., "Eastern Standard Time")
+        /// </summary>
+        private string ConvertIanaToWindowsTimezone(string ianaTimezoneName)
+        {
+            // Mapping of common IANA timezone names to Windows timezone names
+            var ianaToWindowsMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                // North America - Eastern
+                { "America/New_York", "Eastern Standard Time" },
+                { "America/Detroit", "Eastern Standard Time" },
+                { "America/Toronto", "Eastern Standard Time" },
+                { "America/Indianapolis", "Eastern Standard Time" },
+                { "America/Chicago", "Central Standard Time" },
+                { "America/Denver", "Mountain Standard Time" },
+                { "America/Phoenix", "US Mountain Standard Time" },
+                { "America/Los_Angeles", "Pacific Standard Time" },
+                { "America/Anchorage", "Alaskan Standard Time" },
+                { "Pacific/Honolulu", "Hawaiian Standard Time" },
+
+                // Europe
+                { "Europe/London", "GMT Standard Time" },
+                { "Europe/Paris", "Central European Standard Time" },
+                { "Europe/Berlin", "Central European Standard Time" },
+                { "Europe/Amsterdam", "Central European Standard Time" },
+                { "Europe/Brussels", "Central European Standard Time" },
+                { "Europe/Vienna", "Central European Standard Time" },
+                { "Europe/Prague", "Central European Standard Time" },
+                { "Europe/Budapest", "Central European Standard Time" },
+                { "Europe/Warsaw", "Central European Standard Time" },
+                { "Europe/Moscow", "Russian Standard Time" },
+                { "Europe/Dublin", "GMT Standard Time" },
+                { "Europe/Lisbon", "GMT Standard Time" },
+                { "Europe/Madrid", "Romance Standard Time" },
+                { "Europe/Rome", "Romance Standard Time" },
+                { "Europe/Stockholm", "Central European Standard Time" },
+                { "Europe/Athens", "GTB Standard Time" },
+                { "Europe/Istanbul", "Turkey Standard Time" },
+
+                // Asia
+                { "Asia/Tokyo", "Tokyo Standard Time" },
+                { "Asia/Shanghai", "China Standard Time" },
+                { "Asia/Hong_Kong", "China Standard Time" },
+                { "Asia/Singapore", "Singapore Standard Time" },
+                { "Asia/Bangkok", "Indochina Standard Time" },
+                { "Asia/Dubai", "Arabian Standard Time" },
+                { "Asia/Kolkata", "India Standard Time" },
+                { "Asia/Seoul", "Korea Standard Time" },
+
+                // Australia
+                { "Australia/Sydney", "AUS Eastern Standard Time" },
+                { "Australia/Melbourne", "AUS Eastern Standard Time" },
+                { "Australia/Brisbane", "E. Australia Standard Time" },
+                { "Australia/Perth", "W. Australia Standard Time" },
+                { "Australia/Adelaide", "Cen. Australia Standard Time" },
+
+                // Others
+                { "UTC", "UTC" },
+                { "Etc/UTC", "UTC" },
+            };
+
+            // Try direct mapping
+            if (ianaToWindowsMap.TryGetValue(ianaTimezoneName, out var windowsName))
+            {
+                return windowsName;
+            }
+
+            // If not found, try to use the IANA name directly (works on Linux, might fail on Windows)
+            // Verify it's a valid timezone
+            try
+            {
+                TimeZoneInfo.FindSystemTimeZoneById(ianaTimezoneName);
+                return ianaTimezoneName;
+            }
+            catch
+            {
+                // Default to Eastern Standard Time if we can't find it
+                _logger.LogWarning("Timezone {TimezoneName} not found. Defaulting to Eastern Standard Time.", ianaTimezoneName);
+                return "Eastern Standard Time";
             }
         }
 
