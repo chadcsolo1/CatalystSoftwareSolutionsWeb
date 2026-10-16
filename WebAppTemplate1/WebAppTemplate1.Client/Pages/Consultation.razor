@@ -81,6 +81,9 @@
                             {
                                 <div class="time-slots-section">
                                     <h3>Available Times for @selectedDate.Value.ToString("dddd, MMMM dd")</h3>
+                                    <p class="timezone-note" style="font-size: 0.9em; color: #666; margin-top: -10px; margin-bottom: 15px;">
+                                        <small>All times shown in <strong>Eastern Standard Time (EST)</strong></small>
+                                    </p>
 
                                     @if (isLoadingTimes)
                                     {
@@ -1044,6 +1047,9 @@
     {
         selectedTime = time;
         errorMessage = string.Empty;
+
+        // Log to browser console for debugging
+        Console.WriteLine($"[Consultation] Selected time: {time} for date: {selectedDate?.ToString("yyyy-MM-dd")}");
     }
 
     private async Task LoadAvailableTimesAsync()
@@ -1051,6 +1057,7 @@
         if (!selectedDate.HasValue)
         {
             availableTimes.Clear();
+            Console.WriteLine("[Consultation] No date selected");
             return;
         }
 
@@ -1060,27 +1067,38 @@
         try
         {
             var dateParam = selectedDate.Value.ToString("yyyy-MM-dd");
+            Console.WriteLine($"[Consultation] Loading available times for: {dateParam}");
+
             var response = await Http.GetFromJsonAsync<AvailableTimesResponse>($"/api/consultation/available-times?date={dateParam}");
 
             if (response != null && response.Success)
             {
                 availableTimes = response.AvailableSlots ?? new List<string>();
+                Console.WriteLine($"[Consultation] Received {availableTimes.Count} available time slots");
+
+                foreach (var slot in availableTimes)
+                {
+                    Console.WriteLine($"[Consultation] Available slot: {slot} (EST)");
+                }
 
                 if (availableTimes.Count == 0)
                 {
                     errorMessage = "No available times for this date. Please select another date.";
+                    Console.WriteLine($"[Consultation] No available times for {dateParam}");
                 }
             }
             else
             {
                 availableTimes.Clear();
                 errorMessage = "Unable to load available times. Please try again.";
+                Console.WriteLine("[Consultation] API returned error or null response");
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             availableTimes.Clear();
             errorMessage = "Error loading available times. Please try again or select another date.";
+            Console.WriteLine($"[Consultation] Exception loading times: {ex.Message}");
         }
         finally
         {
@@ -1163,11 +1181,14 @@
                 var module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/timezone.js");
                 clientTimezone = await module.InvokeAsync<string>("getClientTimezone");
                 await module.DisposeAsync();
+
+                Console.WriteLine($"[Consultation] Browser timezone detected: {clientTimezone}");
             }
             catch (Exception ex)
             {
                 // If we can't get timezone via JS, proceed without it (graceful degradation)
                 System.Diagnostics.Debug.WriteLine($"Failed to get client timezone: {ex.Message}");
+                Console.WriteLine($"[Consultation] Failed to detect timezone: {ex.Message}");
                 clientTimezone = null;
             }
 
@@ -1183,19 +1204,31 @@
                 ClientTimeZone = clientTimezone
             };
 
+            Console.WriteLine($"[Consultation] Booking submission:");
+            Console.WriteLine($"  Date: {booking.ConsultationDate:yyyy-MM-dd}");
+            Console.WriteLine($"  Time: {booking.ConsultationTime}");
+            Console.WriteLine($"  Client Timezone: {clientTimezone}");
+            Console.WriteLine($"  Name: {booking.FullName}");
+
             var response = await Http.PostAsJsonAsync("/api/consultation/book", booking);
 
             if (response.IsSuccessStatusCode)
             {
+                Console.WriteLine("[Consultation] Booking successful!");
                 isBooked = true;
             }
             else
             {
+                Console.WriteLine($"[Consultation] Booking failed with status: {response.StatusCode}");
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[Consultation] Response: {responseContent}");
                 errorMessage = "Unable to confirm your booking. Please try again or contact us directly.";
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Console.WriteLine($"[Consultation] Exception during booking: {ex.Message}");
+            Console.WriteLine($"[Consultation] Stack trace: {ex.StackTrace}");
             errorMessage = "An error occurred while booking your consultation. Please try again.";
         }
         finally

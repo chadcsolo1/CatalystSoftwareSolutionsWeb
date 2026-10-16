@@ -158,6 +158,12 @@ namespace WebAppTemplate1.Services.Calendar
                 var startLocal = new DateTime(booking.ConsultationDate.Year, booking.ConsultationDate.Month, booking.ConsultationDate.Day, dt.Hour, dt.Minute, 0, DateTimeKind.Unspecified);
                 var endLocal = startLocal.AddMinutes(ConsultationDurationMinutes);
 
+                _logger.LogInformation("[CreateConsultationEvent] Input - Time selected by user: {ConsultationTime}, Date: {ConsultationDate:yyyy-MM-dd}", 
+                    booking.ConsultationTime, booking.ConsultationDate);
+                _logger.LogInformation("[CreateConsultationEvent] Parsed local time: {StartLocal:yyyy-MM-dd HH:mm}, End: {EndLocal:yyyy-MM-dd HH:mm}", 
+                    startLocal, endLocal);
+                _logger.LogInformation("[CreateConsultationEvent] Booking's client timezone: {ClientTimeZone}", booking.ClientTimeZone ?? "None");
+
                 // Convert from browser's local time (assumed to be user's timezone) to America/New_York
                 // If booking.ClientTimeZone is provided, use it; otherwise assume the times are already in America/New_York
                 if (!string.IsNullOrEmpty(booking.ClientTimeZone))
@@ -169,26 +175,40 @@ namespace WebAppTemplate1.Services.Calendar
                         // Try IANA name first, then convert to Windows name
                         string windowsTimezoneName = ConvertIanaToWindowsTimezone(booking.ClientTimeZone);
 
+                        _logger.LogInformation("[CreateConsultationEvent] Converting timezone - IANA: {IanaName} -> Windows: {WindowsName}", 
+                            booking.ClientTimeZone, windowsTimezoneName);
+
                         // Get the client's timezone
                         var clientTz = TimeZoneInfo.FindSystemTimeZoneById(windowsTimezoneName);
-                        var clientTime = new DateTimeOffset(startLocal, clientTz.GetUtcOffset(startLocal));
+                        var utcOffsetForStartTime = clientTz.GetUtcOffset(startLocal);
+                        var clientTime = new DateTimeOffset(startLocal, utcOffsetForStartTime);
+
+                        _logger.LogInformation("[CreateConsultationEvent] Client timezone offset: {UtcOffset}", utcOffsetForStartTime);
+                        _logger.LogInformation("[CreateConsultationEvent] Client time as DateTimeOffset: {ClientTime}", clientTime);
 
                         // Convert to UTC, then to America/New_York
                         var nyTz = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
                         var utcTime = clientTime.ToUniversalTime();
                         var nyTime = TimeZoneInfo.ConvertTime(utcTime.DateTime, TimeZoneInfo.Utc, nyTz);
 
+                        _logger.LogInformation("[CreateConsultationEvent] UTC equivalent: {UtcTime}", utcTime);
+                        _logger.LogInformation("[CreateConsultationEvent] Converted to NY time: {NyTime:yyyy-MM-dd HH:mm}", nyTime);
+
                         startLocal = new DateTime(nyTime.Year, nyTime.Month, nyTime.Day, nyTime.Hour, nyTime.Minute, 0, DateTimeKind.Unspecified);
                         endLocal = startLocal.AddMinutes(ConsultationDurationMinutes);
 
-                        _logger.LogInformation("Timezone conversion successful. Client TZ: {ClientTz} ({WindowsTz}) -> NY Time", 
-                            booking.ClientTimeZone, windowsTimezoneName);
+                        _logger.LogInformation("[CreateConsultationEvent] Final event times - Start: {FinalStart:yyyy-MM-dd HH:mm}, End: {FinalEnd:yyyy-MM-dd HH:mm}", 
+                            startLocal, endLocal);
                     }
                     catch (Exception ex)
                     {
                         // If timezone conversion fails, log warning and use time as-is
-                        _logger.LogWarning(ex, "Failed to convert timezone {ClientTimezone}. Using time as-is.", booking.ClientTimeZone);
+                        _logger.LogWarning(ex, "[CreateConsultationEvent] Failed to convert timezone {ClientTimezone}. Using time as-is.", booking.ClientTimeZone);
                     }
+                }
+                else
+                {
+                    _logger.LogWarning("[CreateConsultationEvent] No client timezone provided. Using selected time as-is (assuming America/New_York)");
                 }
 
                 var newEvent = new Event
@@ -206,13 +226,13 @@ namespace WebAppTemplate1.Services.Calendar
                 var insertReq = _calendarService.Events.Insert(newEvent, _calendarOptions.CalendarOwnerEmail);
                 var created = await insertReq.ExecuteAsync();
 
-                _logger.LogInformation("Calendar event created successfully. Event ID: {EventId}, Organizer: {Organizer}, Creator: {Creator}, Link: {Link}",
-                    created.Id, created?.Organizer?.Email, created?.Creator?.Email, created?.HtmlLink);
+                _logger.LogInformation("[CreateConsultationEvent] Calendar event created successfully. Event ID: {EventId}, Start: {EventStart}, End: {EventEnd}, Organizer: {Organizer}, Link: {Link}",
+                    created.Id, created?.Start?.DateTime, created?.End?.DateTime, created?.Organizer?.Email, created?.HtmlLink);
                 return created.Id ?? string.Empty;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to create calendar event. Booking will proceed without calendar integration.");
+                _logger.LogError(ex, "[CreateConsultationEvent] Failed to create calendar event. Booking will proceed without calendar integration.");
                 throw;
             }
         }
